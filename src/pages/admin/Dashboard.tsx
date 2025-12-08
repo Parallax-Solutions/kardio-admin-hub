@@ -20,14 +20,14 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-4 animate-fade-in sm:space-y-6 lg:space-y-8">
       <PageHeader
         title="Dashboard"
         description="Welcome back! Here's an overview of your system."
       />
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-3">
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
@@ -71,14 +71,14 @@ export default function AdminDashboard() {
 
       {/* Activity Chart */}
       <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Activity Overview</CardTitle>
-          <CardDescription>Transactions and emails processed over the last 7 days</CardDescription>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Activity Overview</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Transactions and emails processed over the last 7 days</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-[350px] w-full">
+        <CardContent className="p-2 sm:p-6">
+          <div className="h-[250px] w-full sm:h-[300px] lg:h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorTransactions" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(168, 80%, 30%)" stopOpacity={0.3} />
@@ -93,16 +93,17 @@ export default function AdminDashboard() {
                 <XAxis
                   dataKey="date"
                   stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
                   stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => `${value}`}
+                  width={30}
                 />
                 <Tooltip
                   contentStyle={{
@@ -110,10 +111,11 @@ export default function AdminDashboard() {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                     boxShadow: 'var(--shadow-lg)',
+                    fontSize: '12px',
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Area
                   type="monotone"
                   dataKey="transactions"
