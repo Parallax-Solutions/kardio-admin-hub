@@ -21,8 +21,8 @@ const FeaturesSection = () => {
     },
     {
       icon: Building2,
-      title: 'Multi-banco',
-      description: 'Compatible con múltiples bancos de la región. Un solo lugar para todas tus cuentas.',
+      title: 'Bancos de Costa Rica',
+      description: 'Compatible con BAC, BCR, Banco Nacional y más. Un solo lugar para todas tus cuentas.',
     },
     {
       icon: RefreshCcw,
@@ -31,8 +31,8 @@ const FeaturesSection = () => {
     },
     {
       icon: Globe,
-      title: 'Hecho para LATAM',
-      description: 'Bancos locales, monedas locales, patrones de correo locales. Diseñado para ti.',
+      title: 'Hecho para Costa Rica',
+      description: 'Bancos ticos, colones, patrones de correo locales. Diseñado para vos.',
     },
     {
       icon: Server,

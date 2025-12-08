@@ -13,11 +13,11 @@ const FAQSection = () => {
     },
     {
       question: '¿Qué bancos soporta Kardio?',
-      answer: 'Actualmente soportamos BAC Credomatic y estamos trabajando en agregar más bancos de Centroamérica, México, Colombia y otros países de LATAM. Si tu banco no está soportado aún, contáctanos y lo priorizaremos.',
+      answer: 'Actualmente soportamos los principales bancos de Costa Rica: BAC Credomatic, BCR, Banco Nacional y Scotiabank. Si tu banco no está soportado aún, contáctanos y lo priorizaremos.',
     },
     {
-      question: '¿Kardio funciona en toda Latinoamérica?',
-      answer: 'Sí. Kardio está diseñado específicamente para Latinoamérica, con soporte para bancos locales, monedas locales y los formatos de correo específicos de la región. Empezamos con Centroamérica y estamos expandiendo.',
+      question: '¿Cómo valida Kardio las transacciones?',
+      answer: 'Kardio lee tanto las notificaciones de transacción como los estados de cuenta que llegan a tu correo. Esto nos permite validar cada transacción y asegurar que tu información financiera esté siempre completa y precisa.',
     },
     {
       question: '¿Mis datos están seguros?',
