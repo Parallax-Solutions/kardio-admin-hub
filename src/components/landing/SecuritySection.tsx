@@ -16,12 +16,7 @@ const SecuritySection = () => {
       icon: Lock,
       title: 'Datos encriptados',
       description: 'Tu información está protegida con encriptación de grado bancario en tránsito y en reposo.',
-    },
-    {
-      icon: Server,
-      title: 'Opción self-hosted',
-      description: 'Si prefieres tener control total, puedes correr Kardio en tu propia infraestructura.',
-    },
+    }
   ];
 
   return (

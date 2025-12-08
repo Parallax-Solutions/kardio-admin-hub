@@ -33,12 +33,7 @@ const FeaturesSection = () => {
       icon: FileCheck,
       title: 'Validación con estados de cuenta',
       description: 'Cruzamos las notificaciones con los estados de cuenta de tu correo para asegurar que no falte ninguna transacción.',
-    },
-    {
-      icon: Server,
-      title: 'Self-hosting disponible',
-      description: 'Si prefieres tener control total, puedes correr Kardio en tu propia infraestructura.',
-    },
+    }
   ];
 
   return (
