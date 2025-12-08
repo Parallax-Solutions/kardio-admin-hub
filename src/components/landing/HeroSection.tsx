@@ -16,7 +16,7 @@ const HeroSection = () => {
           <div className="text-center lg:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-primary">
               <Mail className="h-4 w-4" />
-              <span>Diseñado para Latinoamérica</span>
+              <span>Disponible en Costa Rica 🇨🇷</span>
             </div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
@@ -26,8 +26,8 @@ const HeroSection = () => {
             </h1>
 
             <p className="mb-8 text-lg text-muted-foreground sm:text-xl">
-              Kardio lee los correos de notificación de tu banco, extrae tus transacciones 
-              y las categoriza con IA. Sin ingresar datos manualmente, sin compartir tu clave bancaria.
+              Kardio lee los correos de notificación de tu banco y valida cada transacción 
+              con tus estados de cuenta. Todo categorizado con IA, sin ingresar datos manualmente.
             </p>
 
             <div className="mb-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
