@@ -42,17 +42,17 @@ const HeroSection = () => {
             </div>
 
             {/* Trust notes */}
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground lg:justify-start">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-success" />
+            <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground sm:gap-4 sm:text-sm lg:justify-start">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Shield className="h-3.5 w-3.5 text-success sm:h-4 sm:w-4" />
                 <span>No pedimos clave del banco</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-success" />
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Eye className="h-3.5 w-3.5 text-success sm:h-4 sm:w-4" />
                 <span>Solo lectura de correos</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-success" />
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Lock className="h-3.5 w-3.5 text-success sm:h-4 sm:w-4" />
                 <span>Datos encriptados</span>
               </div>
             </div>
@@ -172,12 +172,12 @@ const HeroSection = () => {
               </div>
             </div>
 
-            {/* Floating badges */}
-            <div className="absolute -left-2 top-1/4 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-left-4">
-              <p className="text-xs font-medium text-success">✓ Categorizado automáticamente</p>
+            {/* Floating badges - hidden on very small screens */}
+            <div className="absolute -left-2 top-1/4 hidden animate-fade-in rounded-lg border border-border bg-card px-2 py-1.5 shadow-elevated sm:block sm:-left-4 sm:px-3 sm:py-2">
+              <p className="text-[10px] font-medium text-success sm:text-xs">✓ Categorizado automáticamente</p>
             </div>
-            <div className="absolute -right-2 bottom-1/3 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-right-4" style={{ animationDelay: '0.2s' }}>
-              <p className="text-xs font-medium text-primary">📧 Importado automáticamente</p>
+            <div className="absolute -right-2 bottom-1/3 hidden animate-fade-in rounded-lg border border-border bg-card px-2 py-1.5 shadow-elevated sm:block sm:-right-4 sm:px-3 sm:py-2" style={{ animationDelay: '0.2s' }}>
+              <p className="text-[10px] font-medium text-primary sm:text-xs">📧 Importado automáticamente</p>
             </div>
           </div>
         </div>
