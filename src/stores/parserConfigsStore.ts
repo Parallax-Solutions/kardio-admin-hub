@@ -7,13 +7,11 @@ import type { TestParserConfigDto } from '@/api/generated/models/TestParserConfi
 
 // Tipos UI
 export type ParserStrategy = 'RULE_BASED' | 'AI' | 'HYBRID';
-export type EmailKind =
-  | 'TRANSACTION_NOTIFICATION'
-  | 'STATEMENT'
-  | 'BALANCE_ALERT'
-  | 'SECURITY_ALERT'
-  | 'PROMOTIONAL'
-  | 'OTHER';
+export enum EmailKind {
+  TRANSACTION_NOTIFICATION = 'TRANSACTION_NOTIFICATION',
+  ACCOUNT_STATEMENT = 'ACCOUNT_STATEMENT',
+  SUBSCRIPTION_NOTIFICATION = 'SUBSCRIPTION_NOTIFICATION',
+}
 
 export interface ParserConfig {
   id: string;
@@ -83,21 +81,28 @@ export const useParserConfigsUIStore = create<ParserConfigsUIState>((set) => ({
 }));
 
 // Transformar response API → modelo UI
-const transformConfig = (apiConfig: Record<string, unknown>): ParserConfig => ({
-  id: (apiConfig.id as string) ?? '',
-  bankId: (apiConfig.bankId as string) ?? '',
-  version: (apiConfig.version as string) ?? '1.0.0',
-  strategy: (apiConfig.strategy as ParserStrategy) ?? 'RULE_BASED',
-  emailKind: (apiConfig.emailKind as EmailKind) ?? 'TRANSACTION_NOTIFICATION',
-  isActive: (apiConfig.isActive as boolean) ?? false,
-  emailSenderPatterns: (apiConfig.emailSenderPatterns as string[]) ?? [],
-  subjectPatterns: (apiConfig.subjectPatterns as string[]) ?? [],
-  rules: (apiConfig.rules as Record<string, unknown>) ?? null,
-  aiConfig: (apiConfig.aiConfig as Record<string, unknown>) ?? null,
-  sampleEmailHtml: (apiConfig.sampleEmailHtml as string) ?? null,
-  createdAt: (apiConfig.createdAt as string) ?? null,
-  updatedAt: (apiConfig.updatedAt as string) ?? null,
-});
+const transformConfig = (apiConfig: Record<string, unknown>): ParserConfig => {
+  const rawEmailKind = apiConfig.emailKind as string;
+  const emailKind = Object.values(EmailKind).includes(rawEmailKind as EmailKind)
+    ? (rawEmailKind as EmailKind)
+    : EmailKind.TRANSACTION_NOTIFICATION;
+
+  return {
+    id: (apiConfig.id as string) ?? '',
+    bankId: (apiConfig.bankId as string) ?? '',
+    version: (apiConfig.version as string) ?? '1.0.0',
+    strategy: (apiConfig.strategy as ParserStrategy) ?? 'RULE_BASED',
+    emailKind,
+    isActive: (apiConfig.isActive as boolean) ?? false,
+    emailSenderPatterns: (apiConfig.emailSenderPatterns as string[]) ?? [],
+    subjectPatterns: (apiConfig.subjectPatterns as string[]) ?? [],
+    rules: (apiConfig.rules as Record<string, unknown>) ?? null,
+    aiConfig: (apiConfig.aiConfig as Record<string, unknown>) ?? null,
+    sampleEmailHtml: (apiConfig.sampleEmailHtml as string) ?? null,
+    createdAt: (apiConfig.createdAt as string) ?? null,
+    updatedAt: (apiConfig.updatedAt as string) ?? null,
+  };
+};
 
 // Query Keys
 export const parserConfigsKeys = {

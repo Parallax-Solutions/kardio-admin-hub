@@ -41,7 +41,7 @@ export type FieldName = typeof FIELD_OPTIONS[number];
 
 export interface ParserField {
   id: string;
-  name: FieldName | '';
+  fieldName: FieldName | '';
   required: boolean;
   defaultValue: string;
   transform: string;
@@ -94,7 +94,7 @@ export function FieldCard({ field, index, onChange, onRemove }: FieldCardProps) 
               )}
               <div>
                 <h4 className="text-sm font-medium sm:text-base">
-                  {field.name || `Field #${index + 1}`}
+                  {field.fieldName || `Field #${index + 1}`}
                 </h4>
                 <p className="text-[10px] text-muted-foreground sm:text-xs">
                   {field.extractors.length} extractor{field.extractors.length !== 1 ? 's' : ''}
@@ -123,9 +123,9 @@ export function FieldCard({ field, index, onChange, onRemove }: FieldCardProps) 
               <div className="space-y-1.5 sm:space-y-2">
                 <Label className="text-xs sm:text-sm">Field Name</Label>
                 <Select
-                  value={field.name}
+                  value={field.fieldName}
                   onValueChange={(value: FieldName) =>
-                    onChange({ ...field, name: value })
+                    onChange({ ...field, fieldName: value })
                   }
                 >
                   <SelectTrigger className="h-9 text-xs sm:text-sm">

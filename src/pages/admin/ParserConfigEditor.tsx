@@ -25,7 +25,7 @@ import { PageHeader } from '@/components/admin/PageHeader';
 import { TagInput } from '@/components/admin/TagInput';
 import { FieldCard, ParserField, type Extractor } from '@/components/admin/FieldCard';
 import { ValidationRow, Validation } from '@/components/admin/ValidationRow';
-import { useBanks, useParserConfig, useCreateParserConfig, useUpdateParserConfig, useTestParser } from '@/stores';
+import { useBanks, useParserConfig, useCreateParserConfig, useUpdateParserConfig, useTestParser, EmailKind } from '@/stores';
 import { toast } from 'sonner';
 
 interface AIConfig {
@@ -39,7 +39,7 @@ interface ParserConfigForm {
   bankId: string;
   version: string;
   strategy: 'RULE_BASED' | 'AI' | 'HYBRID';
-  emailKind: string;
+  emailKind: EmailKind;
   senderPatterns: string[];
   subjectPatterns: string[];
   fields: ParserField[];
@@ -47,14 +47,11 @@ interface ParserConfigForm {
   aiConfig: AIConfig;
 }
 
-const EMAIL_KINDS = [
-  'Transaction notification',
-  'Statement ready',
-  'Balance alert',
-  'Security alert',
-  'Payment confirmation',
-  'Transfer notification',
-];
+const EMAIL_KIND_LABELS: Record<EmailKind, string> = {
+  [EmailKind.TRANSACTION_NOTIFICATION]: 'Transaction Notification',
+  [EmailKind.ACCOUNT_STATEMENT]: 'Account Statement',
+  [EmailKind.SUBSCRIPTION_NOTIFICATION]: 'Subscription Notification',
+};
 
 export default function ParserConfigEditor() {
   const navigate = useNavigate();
@@ -73,7 +70,7 @@ export default function ParserConfigEditor() {
     bankId: '',
     version: 'v1.0',
     strategy: 'RULE_BASED',
-    emailKind: '',
+    emailKind: EmailKind.TRANSACTION_NOTIFICATION,
     senderPatterns: [],
     subjectPatterns: [],
     fields: [],
@@ -93,7 +90,7 @@ export default function ParserConfigEditor() {
       const backendFields = (existingConfig.rules as { fields?: Array<{ fieldName?: string; name?: string; required?: boolean; defaultValue?: string; transform?: string; extractors?: Extractor[] }> })?.fields || [];
       const mappedFields: ParserField[] = backendFields.map((f) => ({
         id: crypto.randomUUID(),
-        name: (f.fieldName || f.name || '') as ParserField['name'],
+        fieldName: (f.fieldName || f.name || '') as ParserField['fieldName'],
         required: f.required || false,
         defaultValue: f.defaultValue || '',
         transform: f.transform || '',
@@ -160,7 +157,7 @@ export default function ParserConfigEditor() {
   const addField = () => {
     const newField: ParserField = {
       id: crypto.randomUUID(),
-      name: '',
+      fieldName: '',
       required: false,
       defaultValue: '',
       transform: '',
@@ -210,7 +207,7 @@ export default function ParserConfigEditor() {
       senderPatterns: form.senderPatterns,
       subjectPatterns: form.subjectPatterns,
       fields: form.fields.map((f) => ({
-        name: f.name || null,
+        fieldName: f.fieldName || null,
         required: f.required,
         defaultValue: f.defaultValue || null,
         transform: f.transform || null,
@@ -237,7 +234,7 @@ export default function ParserConfigEditor() {
         bankId: form.bankId,
         version: form.version,
         strategy: form.strategy,
-        emailKind: form.emailKind,
+        emailKind: form.emailKind as any,
         emailSenderPatterns: form.senderPatterns,
         subjectPatterns: form.subjectPatterns,
         rules: {
@@ -275,7 +272,7 @@ export default function ParserConfigEditor() {
       const payload = {
         rules: {
           fields: form.fields.map((f) => ({
-            fieldName: f.name,
+            fieldName: f.fieldName,
             required: f.required,
             defaultValue: f.defaultValue || undefined,
             transform: f.transform || undefined,
@@ -468,15 +465,15 @@ export default function ParserConfigEditor() {
                       <Label className="text-xs sm:text-sm">Email Kind</Label>
                       <Select
                         value={form.emailKind}
-                        onValueChange={(value) => setForm({ ...form, emailKind: value })}
+                        onValueChange={(value) => setForm({ ...form, emailKind: value as EmailKind })}
                       >
                         <SelectTrigger className="h-9 text-sm sm:h-10">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {EMAIL_KINDS.map((kind) => (
+                          {Object.values(EmailKind).map((kind) => (
                             <SelectItem key={kind} value={kind}>
-                              {kind}
+                              {EMAIL_KIND_LABELS[kind]}
                             </SelectItem>
                           ))}
                         </SelectContent>
