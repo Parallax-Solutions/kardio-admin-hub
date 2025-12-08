@@ -58,94 +58,125 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right content - Dashboard mockup */}
-          <div className="relative">
-            <div className="relative rounded-2xl border border-border bg-card p-4 shadow-elevated">
-              {/* Browser bar */}
-              <div className="mb-4 flex items-center gap-2 border-b border-border pb-3">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-destructive/60" />
-                  <div className="h-3 w-3 rounded-full bg-warning/60" />
-                  <div className="h-3 w-3 rounded-full bg-success/60" />
-                </div>
-                <div className="flex-1 rounded-md bg-muted px-3 py-1 text-center text-xs text-muted-foreground">
-                  app.kardio.io
-                </div>
-              </div>
-
-              {/* Dashboard content */}
-              <div className="space-y-4">
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Gastos del mes</p>
-                    <p className="text-lg font-bold text-foreground">$2,847.50</p>
-                    <p className="text-xs text-destructive">+12% vs mes anterior</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Ingresos</p>
-                    <p className="text-lg font-bold text-foreground">$4,500.00</p>
-                    <p className="text-xs text-success">+5% vs mes anterior</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">Suscripciones</p>
-                    <p className="text-lg font-bold text-foreground">$89.99</p>
-                    <p className="text-xs text-muted-foreground">5 activas</p>
-                  </div>
-                </div>
-
-                {/* Chart mockup */}
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <p className="mb-3 text-sm font-medium text-foreground">Gastos por categoría</p>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Alimentación', value: 35, color: 'bg-primary' },
-                      { name: 'Transporte', value: 22, color: 'bg-accent' },
-                      { name: 'Entretenimiento', value: 18, color: 'bg-info' },
-                      { name: 'Servicios', value: 15, color: 'bg-warning' },
-                      { name: 'Otros', value: 10, color: 'bg-muted-foreground' },
-                    ].map((item) => (
-                      <div key={item.name} className="flex items-center gap-3">
-                        <span className="w-28 text-xs text-muted-foreground">{item.name}</span>
-                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full ${item.color}`} 
-                            style={{ width: `${item.value}%` }}
-                          />
-                        </div>
-                        <span className="w-10 text-right text-xs font-medium text-foreground">{item.value}%</span>
+          {/* Right content - Mobile App mockup */}
+          <div className="relative flex justify-center">
+            {/* Phone frame */}
+            <div className="relative w-[280px] sm:w-[300px]">
+              {/* Phone outer frame */}
+              <div className="rounded-[2.5rem] border-[8px] border-foreground/90 bg-foreground/90 p-1 shadow-elevated">
+                {/* Phone inner bezel */}
+                <div className="rounded-[2rem] bg-card overflow-hidden">
+                  {/* Status bar */}
+                  <div className="flex items-center justify-between bg-background px-5 py-2">
+                    <span className="text-[10px] font-medium text-foreground">9:41</span>
+                    <div className="absolute left-1/2 -translate-x-1/2 h-6 w-20 rounded-full bg-foreground/90" />
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-0.5">
+                        <div className="h-2 w-0.5 rounded-full bg-foreground" />
+                        <div className="h-2.5 w-0.5 rounded-full bg-foreground" />
+                        <div className="h-3 w-0.5 rounded-full bg-foreground" />
+                        <div className="h-3.5 w-0.5 rounded-full bg-foreground" />
                       </div>
-                    ))}
+                      <div className="ml-1 h-3 w-6 rounded-sm border border-foreground">
+                        <div className="h-full w-3/4 rounded-sm bg-success" />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Recent transactions */}
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <p className="mb-3 text-sm font-medium text-foreground">Últimas transacciones</p>
-                  <div className="space-y-2">
-                    {[
-                      { merchant: 'Uber', amount: '-$12.50', category: 'Transporte', time: 'Hace 2h' },
-                      { merchant: 'Spotify', amount: '-$9.99', category: 'Suscripción', time: 'Ayer' },
-                      { merchant: 'Supermercado La Colonia', amount: '-$67.30', category: 'Alimentación', time: 'Ayer' },
-                    ].map((tx, i) => (
-                      <div key={i} className="flex items-center justify-between py-1">
+                  {/* App content */}
+                  <div className="bg-background px-4 py-3 space-y-3">
+                    {/* App header */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Hola, Carlos 👋</p>
+                        <p className="text-sm font-semibold text-foreground">Diciembre 2024</p>
+                      </div>
+                      <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center">
+                        <span className="text-xs font-bold text-primary-foreground">CG</span>
+                      </div>
+                    </div>
+
+                    {/* Balance card */}
+                    <div className="rounded-xl bg-gradient-primary p-4">
+                      <p className="text-[10px] text-primary-foreground/80">Balance disponible</p>
+                      <p className="text-2xl font-bold text-primary-foreground">$1,952.50</p>
+                      <div className="mt-2 flex gap-4">
                         <div>
-                          <p className="text-sm font-medium text-foreground">{tx.merchant}</p>
-                          <p className="text-xs text-muted-foreground">{tx.category} · {tx.time}</p>
+                          <p className="text-[9px] text-primary-foreground/70">Ingresos</p>
+                          <p className="text-xs font-medium text-primary-foreground">+$5,200</p>
                         </div>
-                        <p className="text-sm font-medium text-foreground">{tx.amount}</p>
+                        <div>
+                          <p className="text-[9px] text-primary-foreground/70">Gastos</p>
+                          <p className="text-xs font-medium text-primary-foreground">-$3,247</p>
+                        </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Categories */}
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-2">Gastos por categoría</p>
+                      <div className="space-y-1.5">
+                        {[
+                          { name: 'Alimentación', value: 35, amount: '$1,138', color: 'bg-primary' },
+                          { name: 'Transporte', value: 22, amount: '$714', color: 'bg-accent' },
+                          { name: 'Entretenimiento', value: 18, amount: '$585', color: 'bg-info' },
+                        ].map((item) => (
+                          <div key={item.name} className="flex items-center gap-2">
+                            <div className={`h-2 w-2 rounded-full ${item.color}`} />
+                            <span className="flex-1 text-[10px] text-muted-foreground">{item.name}</span>
+                            <span className="text-[10px] font-medium text-foreground">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recent transactions */}
+                    <div>
+                      <p className="text-xs font-medium text-foreground mb-2">Últimas transacciones</p>
+                      <div className="space-y-2">
+                        {[
+                          { merchant: 'Uber', amount: '-$12.50', icon: '🚗' },
+                          { merchant: 'Spotify', amount: '-$9.99', icon: '🎵' },
+                          { merchant: 'La Colonia', amount: '-$67.30', icon: '🛒' },
+                        ].map((tx, i) => (
+                          <div key={i} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+                            <span className="text-sm">{tx.icon}</span>
+                            <span className="flex-1 text-[11px] font-medium text-foreground">{tx.merchant}</span>
+                            <span className="text-[11px] font-medium text-foreground">{tx.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom nav bar */}
+                  <div className="flex items-center justify-around border-t border-border bg-card px-4 py-3">
+                    <div className="flex flex-col items-center">
+                      <div className="h-4 w-4 rounded bg-primary/20" />
+                      <span className="mt-1 text-[8px] text-primary font-medium">Inicio</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="h-4 w-4 rounded bg-muted" />
+                      <span className="mt-1 text-[8px] text-muted-foreground">Gastos</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="h-4 w-4 rounded bg-muted" />
+                      <span className="mt-1 text-[8px] text-muted-foreground">Suscrip.</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="h-4 w-4 rounded bg-muted" />
+                      <span className="mt-1 text-[8px] text-muted-foreground">Perfil</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Floating badges */}
-            <div className="absolute -left-4 top-1/4 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated">
+            <div className="absolute -left-2 top-1/4 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-left-4">
               <p className="text-xs font-medium text-success">✓ Categorizado con IA</p>
             </div>
-            <div className="absolute -right-4 bottom-1/4 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated" style={{ animationDelay: '0.2s' }}>
+            <div className="absolute -right-2 bottom-1/3 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-right-4" style={{ animationDelay: '0.2s' }}>
               <p className="text-xs font-medium text-primary">📧 Importado automáticamente</p>
             </div>
           </div>
