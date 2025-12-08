@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Power } from 'lucide-react';
 import { useAdminParserConfigs } from '@/hooks/useAdminParserConfigs';
 import { PageHeader } from '@/components/admin/PageHeader';
@@ -33,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ParserConfig } from '@/data/mockData';
 
 export default function AdminParserConfigs() {
+  const navigate = useNavigate();
   const {
     configs,
     banks,
@@ -59,21 +61,16 @@ export default function AdminParserConfigs() {
   });
 
   const openCreateDialog = () => {
-    setEditingConfig(null);
-    setFormData({
-      name: '',
-      bankId: '',
-      bankName: '',
-      status: 'enabled',
-      parserType: 'email',
-      subjectPattern: '',
-      fromEmail: '',
-      notes: '',
-    });
-    setIsDialogOpen(true);
+    // Navigate to the new editor page instead of opening a dialog
+    navigate('/admin/parser-configs/new');
   };
 
   const openEditDialog = (config: ParserConfig) => {
+    // Navigate to edit page
+    navigate(`/admin/parser-configs/${config.id}/edit`);
+  };
+
+  const openQuickEditDialog = (config: ParserConfig) => {
     setEditingConfig(config);
     setFormData({
       name: config.name,
@@ -87,6 +84,7 @@ export default function AdminParserConfigs() {
     });
     setIsDialogOpen(true);
   };
+
 
   const handleBankSelect = (bankId: string) => {
     const bank = banks.find((b) => b.id === bankId);

@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminBanks from "./pages/admin/Banks";
 import AdminParserConfigs from "./pages/admin/ParserConfigs";
+import AdminParserConfigEditor from "./pages/admin/ParserConfigEditor";
 import AdminUsers from "./pages/admin/Users";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,8 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="banks" element={<AdminBanks />} />
               <Route path="parser-configs" element={<AdminParserConfigs />} />
+              <Route path="parser-configs/new" element={<AdminParserConfigEditor />} />
+              <Route path="parser-configs/:id/edit" element={<AdminParserConfigEditor />} />
               <Route path="users" element={<AdminUsers />} />
             </Route>
             
