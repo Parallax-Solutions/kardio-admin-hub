@@ -3,7 +3,7 @@ import {
   Brain, 
   Building2, 
   RefreshCcw, 
-  Globe, 
+  FileCheck, 
   Server,
 } from 'lucide-react';
 
@@ -30,9 +30,9 @@ const FeaturesSection = () => {
       description: 'Identifica automáticamente tus pagos recurrentes como Netflix, Spotify o el gimnasio.',
     },
     {
-      icon: Globe,
-      title: 'Hecho para Costa Rica',
-      description: 'Bancos ticos, colones, patrones de correo locales. Diseñado para vos.',
+      icon: FileCheck,
+      title: 'Validación con estados de cuenta',
+      description: 'Cruzamos las notificaciones con los estados de cuenta de tu correo para asegurar que no falte ninguna transacción.',
     },
     {
       icon: Server,
