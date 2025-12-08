@@ -1,6 +1,5 @@
 import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -48,13 +47,13 @@ export function TagInput({ tags, onChange, placeholder = 'Type and press Enter',
           </button>
         </Badge>
       ))}
-      <Input
+      <input
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? placeholder : ''}
-        className="min-w-[120px] flex-1 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+        className="min-w-[120px] flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
       />
     </div>
   );
