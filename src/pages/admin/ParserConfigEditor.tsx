@@ -82,7 +82,6 @@ export default function ParserConfigEditor() {
 
   // Test tab state
   const [testHtml, setTestHtml] = useState('');
-  const [testEndpoint, setTestEndpoint] = useState('');
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
@@ -175,16 +174,14 @@ export default function ParserConfigEditor() {
       return;
     }
 
-    if (!testEndpoint.trim()) {
-      toast.error('Please configure the backend endpoint');
-      return;
-    }
-
     setTestLoading(true);
     setTestResult(null);
 
     try {
-      const response = await fetch(testEndpoint, {
+      // TODO: Replace with actual backend endpoint
+      const BACKEND_ENDPOINT = '/api/parse-email';
+      
+      const response = await fetch(BACKEND_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -622,33 +619,6 @@ export default function ParserConfigEditor() {
           <div className="grid gap-4 lg:grid-cols-2 lg:gap-6 pb-20 lg:pb-0">
             {/* Input Section */}
             <div className="space-y-4">
-              {/* Endpoint Configuration */}
-              <Card className="shadow-card">
-                <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
-                  <div className="flex items-center gap-2">
-                    <Settings2 className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-                    <CardTitle className="text-sm sm:text-lg">Backend Endpoint</CardTitle>
-                  </div>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Configure the API endpoint that will process the parser rules
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-xs sm:text-sm">Endpoint URL</Label>
-                    <Input
-                      value={testEndpoint}
-                      onChange={(e) => setTestEndpoint(e.target.value)}
-                      placeholder="https://api.example.com/parse-email"
-                      className="h-9 text-sm sm:h-10 font-mono"
-                    />
-                    <p className="text-[10px] text-muted-foreground sm:text-xs">
-                      The endpoint will receive POST with <code className="bg-muted px-1 rounded">{"{ html, parserConfig }"}</code>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* HTML Input */}
               <Card className="shadow-card">
                 <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
@@ -659,7 +629,7 @@ export default function ParserConfigEditor() {
                     </div>
                     <Button
                       onClick={handleTestParser}
-                      disabled={testLoading || !testHtml.trim() || !testEndpoint.trim()}
+                      disabled={testLoading || !testHtml.trim()}
                       size="sm"
                       className="gap-1.5 h-8 text-xs sm:h-9 sm:text-sm"
                     >
