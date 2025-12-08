@@ -35,7 +35,7 @@ const Footer = () => {
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
               Tu tracker de gastos inteligente. Automatización + IA + Privacidad, 
-              diseñado para Latinoamérica.
+              diseñado para Costa Rica.
             </p>
             <p className="text-xs text-muted-foreground">
               © 2024 Kardio. Todos los derechos reservados.
