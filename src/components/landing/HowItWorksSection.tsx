@@ -12,7 +12,7 @@ const HowItWorksSection = () => {
       icon: Cpu,
       number: '02',
       title: 'Extraemos tus transacciones',
-      description: 'Nuestro motor detecta correos de tu banco y extrae cada transacción automáticamente con IA.',
+      description: 'Nuestro motor detecta correos de tu banco y extrae cada transacción automáticamente.',
     },
     {
       icon: LayoutDashboard,

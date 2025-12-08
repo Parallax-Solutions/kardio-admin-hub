@@ -10,7 +10,7 @@ const ProblemSolutionSection = () => {
 
   const solutions = [
     'Lee automáticamente los correos de notificación de tu banco',
-    'Categoriza gastos con IA (GPT-4o-mini)',
+    'Categoriza gastos automáticamente',
     'Funciona con múltiples bancos y monedas',
     'Diseñado específicamente para Costa Rica',
   ];

@@ -16,8 +16,8 @@ const FeaturesSection = () => {
     },
     {
       icon: Brain,
-      title: 'Categorización con IA',
-      description: 'GPT-4o-mini clasifica tus gastos en categorías inteligentes sin que muevas un dedo.',
+      title: 'Categorización inteligente',
+      description: 'Clasifica tus gastos en categorías con ayuda de IA para que entiendas mejor tus finanzas.',
     },
     {
       icon: Building2,

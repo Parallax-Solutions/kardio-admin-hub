@@ -261,7 +261,7 @@ const ProductPreviewSection = () => {
             <p className="text-xs font-medium text-success">✓ Detectado automáticamente</p>
           </div>
           <div className="absolute -right-2 top-32 hidden animate-fade-in rounded-lg border border-primary/20 bg-card px-3 py-2 shadow-elevated lg:block" style={{ animationDelay: '0.15s' }}>
-            <p className="text-xs font-medium text-primary">🧠 Categorizado con IA</p>
+            <p className="text-xs font-medium text-primary">🧠 Categorizado automáticamente</p>
           </div>
         </div>
       </div>
