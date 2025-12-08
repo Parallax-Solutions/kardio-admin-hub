@@ -34,7 +34,7 @@ const Footer = () => {
               <span className="text-xl font-bold text-foreground">Kardio</span>
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Tu tracker de gastos inteligente. Automatización + IA + Privacidad, 
+              Tu tracker de gastos inteligente. Automatización + Privacidad, 
               diseñado para Costa Rica.
             </p>
             <p className="text-xs text-muted-foreground">

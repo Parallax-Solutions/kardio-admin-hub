@@ -27,7 +27,7 @@ const HeroSection = () => {
 
             <p className="mb-8 text-lg text-muted-foreground sm:text-xl">
               Kardio lee los correos de notificación de tu banco y valida cada transacción 
-              con tus estados de cuenta. Todo categorizado con IA, sin ingresar datos manualmente.
+              con tus estados de cuenta. Todo categorizado automáticamente, sin ingresar datos manualmente.
             </p>
 
             <div className="mb-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
@@ -174,7 +174,7 @@ const HeroSection = () => {
 
             {/* Floating badges */}
             <div className="absolute -left-2 top-1/4 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-left-4">
-              <p className="text-xs font-medium text-success">✓ Categorizado con IA</p>
+              <p className="text-xs font-medium text-success">✓ Categorizado automáticamente</p>
             </div>
             <div className="absolute -right-2 bottom-1/3 animate-fade-in rounded-lg border border-border bg-card px-3 py-2 shadow-elevated sm:-right-4" style={{ animationDelay: '0.2s' }}>
               <p className="text-xs font-medium text-primary">📧 Importado automáticamente</p>
