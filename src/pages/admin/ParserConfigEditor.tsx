@@ -531,40 +531,7 @@ export default function ParserConfigEditor() {
             </div>
           </div>
         </div>
-
-        {/* JSON Preview - Mobile Collapsible */}
-        <div className="lg:hidden">
-          <Collapsible open={jsonPreviewOpen} onOpenChange={setJsonPreviewOpen}>
-            <Card className="shadow-card overflow-hidden">
-              <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer p-3 transition-colors hover:bg-muted/30 sm:p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xs sm:text-sm">JSON Preview</CardTitle>
-                      <p className="text-[10px] text-muted-foreground sm:text-xs">
-                        Tap to {jsonPreviewOpen ? 'hide' : 'show'} config
-                      </p>
-                    </div>
-                    <ChevronDown
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${
-                        jsonPreviewOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-                  <div className="overflow-hidden rounded-lg border border-border bg-muted/50">
-                    <pre className="max-h-[250px] overflow-auto p-3 text-[11px] leading-relaxed text-foreground sm:max-h-[300px] sm:p-4 sm:text-xs">
-                      <code className="whitespace-pre-wrap break-words">{JSON.stringify(jsonPreview, null, 2)}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-        </div>
+        {/* JSON Preview - Only visible on desktop via sticky sidebar */}
       </div>
     </div>
   );
