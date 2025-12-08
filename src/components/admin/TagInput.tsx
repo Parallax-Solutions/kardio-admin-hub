@@ -31,7 +31,7 @@ export function TagInput({ tags, onChange, placeholder = 'Type and press Enter',
   };
 
   return (
-    <div className={cn('flex flex-wrap gap-2 rounded-lg border border-input bg-background p-2 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary', className)}>
+    <div className={cn('flex min-h-10 flex-wrap gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring', className)}>
       {tags.map((tag, index) => (
         <Badge
           key={index}
