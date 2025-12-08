@@ -23,10 +23,10 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-1">
             <div className="mb-4 flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
                 <Heart className="h-4 w-4 text-primary-foreground" />
@@ -43,13 +43,13 @@ const Footer = () => {
           </div>
 
           {/* Links */}
-          <div className="grid grid-cols-3 gap-8 lg:col-span-3">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 sm:col-span-2 lg:col-span-3 lg:gap-8">
             <div>
-              <h4 className="mb-4 text-sm font-semibold text-foreground">Producto</h4>
+              <h4 className="mb-3 text-sm font-semibold text-foreground sm:mb-4">Producto</h4>
               <ul className="space-y-2">
                 {links.producto.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                    <a href={link.href} className="text-xs text-muted-foreground transition-colors hover:text-primary sm:text-sm">
                       {link.label}
                     </a>
                   </li>
@@ -57,23 +57,23 @@ const Footer = () => {
               </ul>
             </div>
             <div>
-              <h4 className="mb-4 text-sm font-semibold text-foreground">Recursos</h4>
+              <h4 className="mb-3 text-sm font-semibold text-foreground sm:mb-4">Recursos</h4>
               <ul className="space-y-2">
                 {links.recursos.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                    <a href={link.href} className="text-xs text-muted-foreground transition-colors hover:text-primary sm:text-sm">
                       {link.label}
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <h4 className="mb-4 text-sm font-semibold text-foreground">Legal</h4>
+            <div className="col-span-2 sm:col-span-1">
+              <h4 className="mb-3 text-sm font-semibold text-foreground sm:mb-4">Legal</h4>
               <ul className="space-y-2">
                 {links.legal.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                    <a href={link.href} className="text-xs text-muted-foreground transition-colors hover:text-primary sm:text-sm">
                       {link.label}
                     </a>
                   </li>
