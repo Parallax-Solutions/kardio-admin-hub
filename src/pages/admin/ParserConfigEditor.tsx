@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CodeEditor } from '@/components/ui/code-editor';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -651,11 +652,12 @@ export default function ParserConfigEditor() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                  <Textarea
+                  <CodeEditor
                     value={testHtml}
-                    onChange={(e) => setTestHtml(e.target.value)}
-                    placeholder="<html>&#10;  <body>&#10;    <!-- Paste your email HTML here -->&#10;  </body>&#10;</html>"
-                    className="min-h-[300px] font-mono text-xs sm:min-h-[400px] sm:text-sm"
+                    onChange={setTestHtml}
+                    language="markup"
+                    placeholder="<!-- Paste your email HTML here -->"
+                    minHeight="350px"
                   />
                   <p className="mt-2 text-[10px] text-muted-foreground sm:text-xs">
                     {testHtml.length.toLocaleString()} characters
