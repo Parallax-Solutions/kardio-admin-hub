@@ -86,8 +86,29 @@ export default function ParserConfigEditor() {
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
-    data?: Record<string, unknown>;
-    error?: string;
+    extractedData: {
+      merchant: string | null;
+      amount: number | null;
+      currency: string | null;
+      date: string | null;
+      city: string | null;
+      country: string | null;
+      cardBrand: string | null;
+      cardLast4: string | null;
+      transactionType: string | null;
+      transactionDirection: 'DEBIT' | 'CREDIT' | null;
+      authorizationCode: string | null;
+      reference: string | null;
+      clientName?: string | null;
+    } | null;
+    extractedFields: string[];
+    missingFields: string[];
+    errors: string[];
+    warnings: string[];
+    patternMatches: {
+      senderMatched: boolean;
+      subjectMatched: boolean;
+    };
   } | null>(null);
 
   const addField = () => {
@@ -198,19 +219,28 @@ export default function ParserConfigEditor() {
       if (!response.ok) {
         setTestResult({
           success: false,
-          error: data.error || `HTTP ${response.status}: ${response.statusText}`,
+          extractedData: null,
+          extractedFields: [],
+          missingFields: [],
+          errors: [data.error || `HTTP ${response.status}: ${response.statusText}`],
+          warnings: [],
+          patternMatches: { senderMatched: false, subjectMatched: false },
         });
       } else {
-        setTestResult({
-          success: true,
-          data: data,
-        });
-        toast.success('Parser test completed successfully!');
+        setTestResult(data);
+        if (data.success) {
+          toast.success('Parser test completed successfully!');
+        }
       }
     } catch (error) {
       setTestResult({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to connect to endpoint',
+        extractedData: null,
+        extractedFields: [],
+        missingFields: [],
+        errors: [error instanceof Error ? error.message : 'Failed to connect to endpoint'],
+        warnings: [],
+        patternMatches: { senderMatched: false, subjectMatched: false },
       });
     } finally {
       setTestLoading(false);
@@ -218,8 +248,8 @@ export default function ParserConfigEditor() {
   };
 
   const copyResultToClipboard = () => {
-    if (testResult?.data) {
-      navigator.clipboard.writeText(JSON.stringify(testResult.data, null, 2));
+    if (testResult?.extractedData) {
+      navigator.clipboard.writeText(JSON.stringify(testResult.extractedData, null, 2));
       toast.success('Copied to clipboard');
     }
   };
@@ -714,7 +744,7 @@ export default function ParserConfigEditor() {
                       )}
                       <CardTitle className="text-sm sm:text-lg">Extraction Results</CardTitle>
                     </div>
-                    {testResult?.success && testResult.data && (
+                    {testResult?.success && testResult.extractedData && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -729,8 +759,8 @@ export default function ParserConfigEditor() {
                   <CardDescription className="text-xs sm:text-sm">
                     {testResult
                       ? testResult.success
-                        ? 'Successfully extracted data from the email'
-                        : 'Failed to extract data'
+                        ? `Extracted ${testResult.extractedFields.length} fields`
+                        : `${testResult.errors.length} error(s) occurred`
                       : 'Run a test to see extracted data'}
                   </CardDescription>
                 </CardHeader>
@@ -743,25 +773,74 @@ export default function ParserConfigEditor() {
                       </div>
                     </div>
                   ) : testResult ? (
-                    testResult.success ? (
-                      <div className="overflow-hidden rounded-lg border border-border bg-muted/50">
-                        <pre className="max-h-[400px] overflow-auto p-3 text-xs leading-relaxed text-foreground sm:p-4 sm:text-sm">
-                          <code className="whitespace-pre-wrap break-words">
-                            {JSON.stringify(testResult.data, null, 2)}
-                          </code>
-                        </pre>
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium text-destructive">Error</p>
-                            <p className="mt-1 text-xs text-destructive/80">{testResult.error}</p>
-                          </div>
+                    <div className="space-y-4">
+                      {/* Pattern Matches */}
+                      <div className="flex gap-3 text-xs">
+                        <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 ${testResult.patternMatches.senderMatched ? 'bg-green-500/10 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                          {testResult.patternMatches.senderMatched ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                          Sender
+                        </div>
+                        <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 ${testResult.patternMatches.subjectMatched ? 'bg-green-500/10 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                          {testResult.patternMatches.subjectMatched ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                          Subject
                         </div>
                       </div>
-                    )
+
+                      {/* Errors */}
+                      {testResult.errors.length > 0 && (
+                        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+                          <p className="text-xs font-medium text-destructive mb-1">Errors</p>
+                          <ul className="space-y-1">
+                            {testResult.errors.map((err, i) => (
+                              <li key={i} className="text-xs text-destructive/80">• {err}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Warnings */}
+                      {testResult.warnings.length > 0 && (
+                        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                          <p className="text-xs font-medium text-yellow-600 mb-1">Warnings</p>
+                          <ul className="space-y-1">
+                            {testResult.warnings.map((warn, i) => (
+                              <li key={i} className="text-xs text-yellow-600/80">• {warn}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Missing Fields */}
+                      {testResult.missingFields.length > 0 && (
+                        <div className="rounded-lg border border-muted bg-muted/30 p-3">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Missing Fields</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {testResult.missingFields.map((field, i) => (
+                              <span key={i} className="rounded bg-muted px-2 py-0.5 text-xs font-mono">{field}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Extracted Data */}
+                      {testResult.extractedData && (
+                        <div className="overflow-hidden rounded-lg border border-border bg-muted/50">
+                          <div className="border-b border-border bg-muted/50 px-3 py-2">
+                            <p className="text-xs font-medium">Extracted Data</p>
+                          </div>
+                          <div className="divide-y divide-border">
+                            {Object.entries(testResult.extractedData).map(([key, value]) => (
+                              <div key={key} className="flex items-center justify-between px-3 py-2 text-xs">
+                                <span className="font-mono text-muted-foreground">{key}</span>
+                                <span className={`font-medium ${value === null ? 'text-muted-foreground italic' : 'text-foreground'}`}>
+                                  {value === null ? 'null' : String(value)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="rounded-lg border border-dashed bg-muted/30 p-8 text-center">
                       <Play className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
