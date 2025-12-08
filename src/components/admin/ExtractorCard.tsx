@@ -28,37 +28,37 @@ interface ExtractorCardProps {
 
 export function ExtractorCard({ extractor, index, onChange, onRemove }: ExtractorCardProps) {
   return (
-    <div className="group relative flex gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:border-border">
+    <div className="group relative flex gap-2 rounded-md border border-border/50 bg-muted/30 p-2 transition-colors hover:border-border sm:gap-3 sm:rounded-lg sm:p-3">
       <div className="flex cursor-grab items-center text-muted-foreground">
-        <GripVertical className="h-4 w-4" />
+        <GripVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       </div>
       
-      <div className="flex-1 space-y-3">
+      <div className="flex-1 space-y-2 sm:space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-[10px] font-medium text-muted-foreground sm:text-xs">
             Extractor #{index + 1}
           </span>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+            className="h-6 w-6 text-muted-foreground opacity-100 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
             onClick={onRemove}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </Button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Type</Label>
+        <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
+          <div className="space-y-1 sm:space-y-1.5">
+            <Label className="text-[10px] sm:text-xs">Type</Label>
             <Select
               value={extractor.type}
               onValueChange={(value: Extractor['type']) =>
                 onChange({ ...extractor, type: value })
               }
             >
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-7 text-[10px] sm:h-8 sm:text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -71,17 +71,17 @@ export function ExtractorCard({ extractor, index, onChange, onRemove }: Extracto
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Flags</Label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <Label className="text-[10px] sm:text-xs">Flags</Label>
               <Input
                 value={extractor.flags || ''}
                 onChange={(e) => onChange({ ...extractor, flags: e.target.value })}
                 placeholder="i, g, m"
-                className="h-8 font-mono text-xs"
+                className="h-7 font-mono text-[10px] sm:h-8 sm:text-xs"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Capture Group</Label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <Label className="text-[10px] sm:text-xs">Group</Label>
               <Input
                 type="number"
                 min={0}
@@ -93,14 +93,14 @@ export function ExtractorCard({ extractor, index, onChange, onRemove }: Extracto
                   })
                 }
                 placeholder="0"
-                className="h-8 text-xs"
+                className="h-7 text-[10px] sm:h-8 sm:text-xs"
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs">Pattern</Label>
+        <div className="space-y-1 sm:space-y-1.5">
+          <Label className="text-[10px] sm:text-xs">Pattern</Label>
           <Textarea
             value={extractor.pattern}
             onChange={(e) => onChange({ ...extractor, pattern: e.target.value })}
@@ -113,7 +113,7 @@ export function ExtractorCard({ extractor, index, onChange, onRemove }: Extracto
                 ? 'e.g. .transaction-amount'
                 : 'e.g. $.transaction.amount'
             }
-            className="min-h-[60px] font-mono text-xs"
+            className="min-h-[50px] font-mono text-[10px] sm:min-h-[60px] sm:text-xs"
           />
         </div>
       </div>

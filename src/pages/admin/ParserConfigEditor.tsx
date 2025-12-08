@@ -77,6 +77,7 @@ export default function ParserConfigEditor() {
   });
 
   const [aiConfigOpen, setAiConfigOpen] = useState(false);
+  const [jsonPreviewOpen, setJsonPreviewOpen] = useState(false);
 
   const addField = () => {
     const newField: ParserField = {
@@ -158,45 +159,63 @@ export default function ParserConfigEditor() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-4 animate-fade-in pb-8 sm:space-y-6 sm:pb-12">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8 sm:h-10 sm:w-10"
           onClick={() => navigate('/admin/parser-configs')}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
         <PageHeader
           title={isEditing ? 'Edit Parser Config' : 'Create Parser Config'}
-          description="Define how to extract transaction data from bank notification emails."
+          description="Define how to extract transaction data from bank emails."
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* Mobile Save Button - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background p-3 lg:hidden">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1 h-10 text-sm"
+            onClick={() => navigate('/admin/parser-configs')}
+          >
+            Cancel
+          </Button>
+          <Button className="flex-1 h-10 gap-1.5 text-sm" onClick={handleSave}>
+            <Save className="h-4 w-4" />
+            Save
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3 lg:gap-6">
         {/* Main Form */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2 lg:space-y-6 pb-20 lg:pb-0">
           {/* General Settings */}
           <Card className="shadow-card">
-            <CardHeader className="pb-4">
+            <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
               <div className="flex items-center gap-2">
-                <Settings2 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg">General Settings</CardTitle>
+                <Settings2 className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                <CardTitle className="text-sm sm:text-lg">General Settings</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Basic configuration for this parser
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Bank</Label>
+            <CardContent className="p-4 pt-0 space-y-3 sm:p-6 sm:pt-0 sm:space-y-4">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">Bank</Label>
                   <Select
                     value={form.bankId}
                     onValueChange={(value) => setForm({ ...form, bankId: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm sm:h-10">
                       <SelectValue placeholder="Select bank" />
                     </SelectTrigger>
                     <SelectContent>
@@ -209,24 +228,25 @@ export default function ParserConfigEditor() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Version</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">Version</Label>
                   <Input
                     value={form.version}
                     onChange={(e) => setForm({ ...form, version: e.target.value })}
                     placeholder="e.g. v1.0"
+                    className="h-9 text-sm sm:h-10"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Strategy</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">Strategy</Label>
                   <Select
                     value={form.strategy}
                     onValueChange={(value: ParserConfigForm['strategy']) =>
                       setForm({ ...form, strategy: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -237,13 +257,13 @@ export default function ParserConfigEditor() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Email Kind</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">Email Kind</Label>
                   <Select
                     value={form.emailKind}
                     onValueChange={(value) => setForm({ ...form, emailKind: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm sm:h-10">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -257,26 +277,26 @@ export default function ParserConfigEditor() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Sender Patterns (Regex)</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm">Sender Patterns (Regex)</Label>
                 <TagInput
                   tags={form.senderPatterns}
                   onChange={(tags) => setForm({ ...form, senderPatterns: tags })}
-                  placeholder="Type regex pattern and press Enter"
+                  placeholder="Type pattern + Enter"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground sm:text-xs">
                   Regex patterns to match the sender email address
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Subject Patterns (Regex)</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm">Subject Patterns (Regex)</Label>
                 <TagInput
                   tags={form.subjectPatterns}
                   onChange={(tags) => setForm({ ...form, subjectPatterns: tags })}
-                  placeholder="Type regex pattern and press Enter"
+                  placeholder="Type pattern + Enter"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground sm:text-xs">
                   Regex patterns to match the email subject line
                 </p>
               </div>
@@ -285,36 +305,37 @@ export default function ParserConfigEditor() {
 
           {/* Fields & Extractors */}
           <Card className="shadow-card">
-            <CardHeader className="pb-4">
+            <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Code2 className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Fields & Extractors</CardTitle>
+                  <Code2 className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                  <CardTitle className="text-sm sm:text-lg">Fields & Extractors</CardTitle>
                 </div>
-                <Button onClick={addField} className="gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  Add Field
+                <Button onClick={addField} size="sm" className="gap-1 h-8 text-xs sm:gap-1.5 sm:h-9 sm:text-sm">
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Add Field</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               </div>
-              <CardDescription>
-                Define which fields to extract and how to extract them
+              <CardDescription className="text-xs sm:text-sm">
+                Define which fields to extract and how
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               {form.fields.length === 0 ? (
-                <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center">
-                  <Code2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-                  <h4 className="mb-1 font-medium">No fields defined</h4>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    Add fields to start extracting data from emails
+                <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center sm:rounded-xl sm:p-8">
+                  <Code2 className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50 sm:mb-3 sm:h-10 sm:w-10" />
+                  <h4 className="mb-1 text-sm font-medium">No fields defined</h4>
+                  <p className="mb-3 text-xs text-muted-foreground sm:mb-4 sm:text-sm">
+                    Add fields to start extracting data
                   </p>
-                  <Button onClick={addField} variant="outline" className="gap-1.5">
-                    <Plus className="h-4 w-4" />
+                  <Button onClick={addField} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm">
+                    <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     Add Your First Field
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {form.fields.map((field, index) => (
                     <FieldCard
                       key={field.id}
@@ -331,31 +352,32 @@ export default function ParserConfigEditor() {
 
           {/* Validations */}
           <Card className="shadow-card">
-            <CardHeader className="pb-4">
+            <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Validations</CardTitle>
+                  <ShieldCheck className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                  <CardTitle className="text-sm sm:text-lg">Validations</CardTitle>
                 </div>
-                <Button onClick={addValidation} variant="outline" className="gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  Add Rule
+                <Button onClick={addValidation} variant="outline" size="sm" className="gap-1 h-8 text-xs sm:gap-1.5 sm:h-9 sm:text-sm">
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Add Rule</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               </div>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Define validation rules for extracted fields
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               {form.validations.length === 0 ? (
-                <div className="rounded-lg border border-dashed bg-muted/30 p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center sm:p-6">
+                  <p className="text-xs text-muted-foreground sm:text-sm">
                     No validation rules defined yet
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-12 gap-2 px-2 text-xs font-medium text-muted-foreground">
+                  <div className="hidden grid-cols-12 gap-2 px-2 text-xs font-medium text-muted-foreground sm:grid">
                     <div className="col-span-3">Field</div>
                     <div className="col-span-2">Rule</div>
                     <div className="col-span-2">Value</div>
@@ -380,28 +402,28 @@ export default function ParserConfigEditor() {
             <Card className="shadow-card">
               <Collapsible open={aiConfigOpen} onOpenChange={setAiConfigOpen}>
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer pb-4 transition-colors hover:bg-muted/30">
+                  <CardHeader className="cursor-pointer p-4 pb-3 transition-colors hover:bg-muted/30 sm:p-6 sm:pb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-accent" />
-                        <CardTitle className="text-lg">AI Configuration</CardTitle>
+                        <Sparkles className="h-4 w-4 text-accent sm:h-5 sm:w-5" />
+                        <CardTitle className="text-sm sm:text-lg">AI Configuration</CardTitle>
                       </div>
                       <ChevronDown
-                        className={`h-5 w-5 text-muted-foreground transition-transform ${
+                        className={`h-4 w-4 text-muted-foreground transition-transform sm:h-5 sm:w-5 ${
                           aiConfigOpen ? 'rotate-180' : ''
                         }`}
                       />
                     </div>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       Configure AI model settings for extraction
                     </CardDescription>
                   </CardHeader>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <CardContent className="space-y-4 pt-0">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label>Model</Label>
+                  <CardContent className="space-y-3 p-4 pt-0 sm:space-y-4 sm:p-6 sm:pt-0">
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm">Model</Label>
                         <Input
                           value={form.aiConfig.model}
                           onChange={(e) =>
@@ -411,11 +433,12 @@ export default function ParserConfigEditor() {
                             })
                           }
                           placeholder="e.g. gpt-4o-mini"
+                          className="h-9 text-sm sm:h-10"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>Max Tokens</Label>
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm">Max Tokens</Label>
                         <Input
                           type="number"
                           value={form.aiConfig.maxTokens}
@@ -428,12 +451,13 @@ export default function ParserConfigEditor() {
                               },
                             })
                           }
+                          className="h-9 text-sm sm:h-10"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Temperature: {form.aiConfig.temperature.toFixed(1)}</Label>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm">Temperature: {form.aiConfig.temperature.toFixed(1)}</Label>
                       <Slider
                         value={[form.aiConfig.temperature]}
                         onValueChange={([value]) =>
@@ -447,13 +471,13 @@ export default function ParserConfigEditor() {
                         step={0.1}
                         className="w-full"
                       />
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">
                         Lower values make output more deterministic
                       </p>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>System Prompt</Label>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm">System Prompt</Label>
                       <Textarea
                         value={form.aiConfig.systemPrompt}
                         onChange={(e) =>
@@ -463,7 +487,8 @@ export default function ParserConfigEditor() {
                           })
                         }
                         placeholder="You are an expert at parsing bank transaction emails..."
-                        rows={4}
+                        rows={3}
+                        className="text-sm"
                       />
                     </div>
                   </CardContent>
@@ -473,8 +498,8 @@ export default function ParserConfigEditor() {
           )}
         </div>
 
-        {/* JSON Preview Sidebar */}
-        <div className="lg:col-span-1">
+        {/* JSON Preview Sidebar - Desktop */}
+        <div className="hidden lg:col-span-1 lg:block">
           <div className="sticky top-6">
             <Card className="shadow-card">
               <CardHeader className="pb-3">
@@ -505,6 +530,33 @@ export default function ParserConfigEditor() {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* JSON Preview - Mobile Collapsible */}
+        <div className="lg:hidden">
+          <Collapsible open={jsonPreviewOpen} onOpenChange={setJsonPreviewOpen}>
+            <Card className="shadow-card">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer p-4 transition-colors hover:bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm">JSON Preview</CardTitle>
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                        jsonPreviewOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-4 pt-0">
+                  <pre className="max-h-[300px] overflow-auto rounded-lg bg-sidebar p-3 text-[10px] text-sidebar-foreground">
+                    <code>{JSON.stringify(jsonPreview, null, 2)}</code>
+                  </pre>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </div>
       </div>
     </div>
