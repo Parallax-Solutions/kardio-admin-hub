@@ -41,7 +41,7 @@ const Navbar = () => {
           {/* CTA buttons */}
           <div className="hidden items-center gap-3 md:flex">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/admin">Admin</Link>
+              <Link to="/login">Admin</Link>
             </Button>
             <Button size="sm">Empezar gratis</Button>
           </div>

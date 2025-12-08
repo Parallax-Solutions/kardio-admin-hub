@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, Settings2, Code2, ShieldCheck, Sparkles, ChevronDown, Play, Loader2, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,9 +23,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { TagInput } from '@/components/admin/TagInput';
-import { FieldCard, ParserField } from '@/components/admin/FieldCard';
+import { FieldCard, ParserField, type Extractor } from '@/components/admin/FieldCard';
 import { ValidationRow, Validation } from '@/components/admin/ValidationRow';
-import { mockBanks } from '@/data/mockData';
+import { useBanks, useParserConfig, useCreateParserConfig, useUpdateParserConfig, useTestParser } from '@/stores';
 import { toast } from 'sonner';
 
 interface AIConfig {
@@ -61,6 +61,13 @@ export default function ParserConfigEditor() {
   const { id } = useParams();
   const isEditing = Boolean(id);
 
+  // Data hooks
+  const { data: banks = [], isLoading: banksLoading } = useBanks();
+  const { data: existingConfig, isLoading: configLoading } = useParserConfig(id);
+  const createConfig = useCreateParserConfig();
+  const updateConfig = useUpdateParserConfig();
+  const testParser = useTestParser();
+
   const [activeTab, setActiveTab] = useState('config');
   const [form, setForm] = useState<ParserConfigForm>({
     bankId: '',
@@ -79,7 +86,46 @@ export default function ParserConfigEditor() {
     },
   });
 
+  // Load existing config when editing
+  useEffect(() => {
+    if (existingConfig && isEditing) {
+      // Map backend fields (fieldName) to frontend fields (name)
+      const backendFields = (existingConfig.rules as { fields?: Array<{ fieldName?: string; name?: string; required?: boolean; defaultValue?: string; transform?: string; extractors?: Extractor[] }> })?.fields || [];
+      const mappedFields: ParserField[] = backendFields.map((f) => ({
+        id: crypto.randomUUID(),
+        name: (f.fieldName || f.name || '') as ParserField['name'],
+        required: f.required || false,
+        defaultValue: f.defaultValue || '',
+        transform: f.transform || '',
+        extractors: f.extractors || [],
+      }));
+
+      setForm({
+        bankId: existingConfig.bankId,
+        version: existingConfig.version,
+        strategy: existingConfig.strategy,
+        emailKind: existingConfig.emailKind,
+        senderPatterns: existingConfig.emailSenderPatterns || [],
+        subjectPatterns: existingConfig.subjectPatterns || [],
+        fields: mappedFields,
+        validations: (existingConfig.rules as { validations?: Validation[] })?.validations || [],
+        aiConfig: {
+          model: (existingConfig.aiConfig as unknown as AIConfig)?.model || 'gpt-4o-mini',
+          systemPrompt: (existingConfig.aiConfig as unknown as AIConfig)?.systemPrompt || '',
+          temperature: (existingConfig.aiConfig as unknown as AIConfig)?.temperature || 0.7,
+          maxTokens: (existingConfig.aiConfig as unknown as AIConfig)?.maxTokens || 1000,
+        },
+      });
+      // Load sample email HTML for testing
+      if (existingConfig.sampleEmailHtml) {
+        setTestHtml(existingConfig.sampleEmailHtml);
+      }
+    }
+  }, [existingConfig, isEditing]);
+
   const [aiConfigOpen, setAiConfigOpen] = useState(false);
+  
+  const isLoading = banksLoading || (isEditing && configLoading);
 
   // Test tab state
   const [testHtml, setTestHtml] = useState('');
@@ -155,7 +201,7 @@ export default function ParserConfigEditor() {
   };
 
   const jsonPreview = useMemo(() => {
-    const bank = mockBanks.find((b) => b.id === form.bankId);
+    const bank = banks.find((b) => b.id === form.bankId);
     return {
       bank: bank?.name || null,
       version: form.version,
@@ -185,9 +231,35 @@ export default function ParserConfigEditor() {
     };
   }, [form]);
 
-  const handleSave = () => {
-    toast.success('Parser config saved successfully!');
-    navigate('/admin/parser-configs');
+  const handleSave = async () => {
+    try {
+      const payload = {
+        bankId: form.bankId,
+        version: form.version,
+        strategy: form.strategy,
+        emailKind: form.emailKind,
+        emailSenderPatterns: form.senderPatterns,
+        subjectPatterns: form.subjectPatterns,
+        rules: {
+          fields: form.fields,
+          validations: form.validations,
+        },
+        aiConfig: form.strategy !== 'RULE_BASED' ? form.aiConfig : undefined,
+        isActive: false,
+      };
+
+      if (isEditing && id) {
+        await updateConfig.mutateAsync({ id, data: payload as Parameters<typeof updateConfig.mutateAsync>[0]['data'] });
+        toast.success('Parser config updated!');
+      } else {
+        await createConfig.mutateAsync(payload as Parameters<typeof createConfig.mutateAsync>[0]);
+        toast.success('Parser config created!');
+      }
+      navigate('/admin/parser-configs');
+    } catch (error) {
+      toast.error('Error saving parser config');
+      console.error(error);
+    }
   };
 
   const handleTestParser = async () => {
@@ -200,37 +272,52 @@ export default function ParserConfigEditor() {
     setTestResult(null);
 
     try {
-      // TODO: Replace with actual backend endpoint
-      const BACKEND_ENDPOINT = '/api/parse-email';
-      
-      const response = await fetch(BACKEND_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const payload = {
+        rules: {
+          fields: form.fields.map((f) => ({
+            fieldName: f.name,
+            required: f.required,
+            defaultValue: f.defaultValue || undefined,
+            transform: f.transform || undefined,
+            extractors: f.extractors.map((e) => ({
+              type: e.type,
+              pattern: e.pattern,
+              flags: e.flags || undefined,
+              captureGroup: e.captureGroup,
+            })),
+          })),
+          validations: form.validations.map((v) => ({
+            field: v.field,
+            ruleType: v.ruleType,
+            value: v.value || undefined,
+            errorMessage: v.errorMessage || undefined,
+          })),
         },
-        body: JSON.stringify({
-          html: testHtml,
-          parserConfig: jsonPreview,
-        }),
+        sampleEmailHtml: testHtml,
+        emailSenderPatterns: form.senderPatterns,
+        subjectPatterns: form.subjectPatterns,
+      };
+
+      console.log('Test payload:', payload);
+      const response = await testParser.mutateAsync(payload);
+      console.log('Test response:', response);
+      
+      // La respuesta del backend viene envuelta en { data: ... }
+      const result = response?.data ?? response;
+      
+      // Map the response to our expected format
+      setTestResult({
+        success: result?.success ?? false,
+        extractedData: result?.extractedData ?? result?.data ?? null,
+        extractedFields: result?.extractedFields ?? [],
+        missingFields: result?.missingFields ?? [],
+        errors: result?.errors ?? [],
+        warnings: result?.warnings ?? [],
+        patternMatches: result?.patternMatches ?? { senderMatched: false, subjectMatched: false },
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setTestResult({
-          success: false,
-          extractedData: null,
-          extractedFields: [],
-          missingFields: [],
-          errors: [data.error || `HTTP ${response.status}: ${response.statusText}`],
-          warnings: [],
-          patternMatches: { senderMatched: false, subjectMatched: false },
-        });
-      } else {
-        setTestResult(data);
-        if (data.success) {
-          toast.success('Parser test completed successfully!');
-        }
+      if (result?.success) {
+        toast.success('Parser test completed successfully!');
       }
     } catch (error) {
       setTestResult({
@@ -238,10 +325,11 @@ export default function ParserConfigEditor() {
         extractedData: null,
         extractedFields: [],
         missingFields: [],
-        errors: [error instanceof Error ? error.message : 'Failed to connect to endpoint'],
+        errors: [error instanceof Error ? error.message : 'Failed to test parser'],
         warnings: [],
         patternMatches: { senderMatched: false, subjectMatched: false },
       });
+      toast.error('Parser test failed');
     } finally {
       setTestLoading(false);
     }
@@ -253,6 +341,14 @@ export default function ParserConfigEditor() {
       toast.success('Copied to clipboard');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-fade-in pb-8 sm:space-y-6 sm:pb-12">
@@ -330,7 +426,7 @@ export default function ParserConfigEditor() {
                           <SelectValue placeholder="Select bank" />
                         </SelectTrigger>
                         <SelectContent>
-                          {mockBanks.map((bank) => (
+                          {banks.map((bank) => (
                             <SelectItem key={bank.id} value={bank.id}>
                               {bank.name}
                             </SelectItem>
@@ -686,6 +782,10 @@ export default function ParserConfigEditor() {
                     value={testHtml}
                     onChange={setTestHtml}
                     language="markup"
+                    formatOnPaste
+                    cleanOnPaste
+                    showValidation
+                    maxHeight="400px"
                     placeholder="<!-- Paste your email HTML here -->"
                     minHeight="350px"
                   />
@@ -710,7 +810,7 @@ export default function ParserConfigEditor() {
                   <div className="space-y-2 text-xs sm:text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Bank:</span>
-                      <span className="font-medium">{mockBanks.find(b => b.id === form.bankId)?.name || 'Not selected'}</span>
+                      <span className="font-medium">{banks.find(b => b.id === form.bankId)?.name || 'Not selected'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Strategy:</span>

@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { useAdminUsers } from '@/hooks/useAdminUsers';
+import { Loader2 } from 'lucide-react';
+import { 
+  useUsers, 
+  useUpdateUserRole,
+  useSetUsersFilters,
+  useUsersFilters,
+  type User,
+  type UserRole,
+} from '@/stores';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,37 +36,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { User } from '@/data/mockData';
+import { toast } from 'sonner';
 
 export default function AdminUsers() {
-  const { users, roleFilter, setRoleFilter, updateUserRole } = useAdminUsers();
+  const { data: users = [], isLoading, error } = useUsers();
+  const filters = useUsersFilters();
+  const setFilters = useSetUsersFilters();
+  const updateRole = useUpdateUserRole();
+
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     user: User | null;
-    newRole: 'ADMIN' | 'CLIENT' | null;
+    newRole: UserRole | null;
   }>({ open: false, user: null, newRole: null });
 
-  const handleRoleChange = (user: User, newRole: 'ADMIN' | 'CLIENT') => {
+  const handleRoleChange = (user: User, newRole: UserRole) => {
     if (newRole !== user.role) {
       setConfirmDialog({ open: true, user, newRole });
     }
   };
 
-  const confirmRoleChange = () => {
+  const confirmRoleChange = async () => {
     if (confirmDialog.user && confirmDialog.newRole) {
-      updateUserRole(confirmDialog.user.id, confirmDialog.newRole);
+      try {
+        await updateRole.mutateAsync({ 
+          id: confirmDialog.user.id, 
+          role: confirmDialog.newRole 
+        });
+        toast.success('Rol actualizado');
+      } catch {
+        toast.error('Error al actualizar rol');
+      }
     }
     setConfirmDialog({ open: false, user: null, newRole: null });
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      active: 'bg-success/10 text-success border-success/20',
-      inactive: 'bg-muted text-muted-foreground',
-      pending: 'bg-warning/10 text-warning border-warning/20',
-    };
-    return styles[status] || '';
-  };
+  if (error) {
+    return <div className="text-destructive">Error: {error.message}</div>;
+  }
 
   return (
     <div className="space-y-4 animate-fade-in sm:space-y-6">
@@ -66,7 +81,10 @@ export default function AdminUsers() {
 
       {/* Filter */}
       <div className="flex items-center gap-3 sm:gap-4">
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <Select 
+          value={filters.role ?? 'all'} 
+          onValueChange={(value) => setFilters({ role: value === 'all' ? null : value as UserRole })}
+        >
           <SelectTrigger className="w-[120px] h-9 text-xs sm:w-[150px] sm:h-10 sm:text-sm">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
@@ -76,6 +94,7 @@ export default function AdminUsers() {
             <SelectItem value="CLIENT">Client</SelectItem>
           </SelectContent>
         </Select>
+        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
       </div>
 
       {/* Desktop Table */}
@@ -86,7 +105,6 @@ export default function AdminUsers() {
               <TableHead>Email</TableHead>
               <TableHead className="hidden lg:table-cell">Name</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead className="hidden lg:table-cell">Created At</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -104,16 +122,13 @@ export default function AdminUsers() {
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={`text-xs ${getStatusBadge(user.status)}`}>
-                    {user.status}
-                  </Badge>
+                <TableCell className="hidden text-muted-foreground lg:table-cell">
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                 </TableCell>
-                <TableCell className="hidden text-muted-foreground lg:table-cell">{user.createdAt}</TableCell>
                 <TableCell className="text-right">
                   <Select
                     value={user.role}
-                    onValueChange={(value: 'ADMIN' | 'CLIENT') => handleRoleChange(user, value)}
+                    onValueChange={(value: UserRole) => handleRoleChange(user, value)}
                   >
                     <SelectTrigger className="w-[100px] h-8 text-xs">
                       <SelectValue />
@@ -141,23 +156,20 @@ export default function AdminUsers() {
                     <p className="truncate text-sm font-medium">{user.email}</p>
                     <p className="text-xs text-muted-foreground">{user.name}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge
-                      variant={user.role === 'ADMIN' ? 'default' : 'secondary'}
-                      className={`text-[10px] ${user.role === 'ADMIN' ? 'bg-primary' : ''}`}
-                    >
-                      {user.role}
-                    </Badge>
-                    <Badge variant="outline" className={`text-[10px] ${getStatusBadge(user.status)}`}>
-                      {user.status}
-                    </Badge>
-                  </div>
+                  <Badge
+                    variant={user.role === 'ADMIN' ? 'default' : 'secondary'}
+                    className={`text-[10px] ${user.role === 'ADMIN' ? 'bg-primary' : ''}`}
+                  >
+                    {user.role}
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-[10px] text-muted-foreground">{user.createdAt}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
+                  </span>
                   <Select
                     value={user.role}
-                    onValueChange={(value: 'ADMIN' | 'CLIENT') => handleRoleChange(user, value)}
+                    onValueChange={(value: UserRole) => handleRoleChange(user, value)}
                   >
                     <SelectTrigger className="w-[90px] h-7 text-[10px]">
                       <SelectValue />

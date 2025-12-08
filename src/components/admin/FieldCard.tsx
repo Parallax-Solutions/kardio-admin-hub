@@ -17,6 +17,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ExtractorCard, Extractor } from './ExtractorCard';
+export type { Extractor };
 import { cn } from '@/lib/utils';
 
 export const FIELD_OPTIONS = [
