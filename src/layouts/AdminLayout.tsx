@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  Coins,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/banks', label: 'Banks', icon: Building2 },
   { path: '/admin/parser-configs', label: 'Parser Configs', icon: FileCode2 },
+  { path: '/admin/currencies', label: 'Currencies', icon: Coins },
   { path: '/admin/users', label: 'Users', icon: Users },
 ];
 

@@ -14,6 +14,7 @@ import AdminBanks from "./pages/admin/Banks";
 import AdminParserConfigs from "./pages/admin/ParserConfigs";
 import AdminParserConfigEditor from "./pages/admin/ParserConfigEditor";
 import AdminUsers from "./pages/admin/Users";
+import AdminCurrencies from "./pages/admin/Currencies";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="parser-configs" element={<AdminParserConfigs />} />
               <Route path="parser-configs/new" element={<AdminParserConfigEditor />} />
               <Route path="parser-configs/:id/edit" element={<AdminParserConfigEditor />} />
+              <Route path="currencies" element={<AdminCurrencies />} />
               <Route path="users" element={<AdminUsers />} />
             </Route>
             
