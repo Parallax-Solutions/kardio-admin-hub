@@ -53,9 +53,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('date-fns')) {
               return 'vendor-date';
             }
-            // Charts (recharts is large)
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'vendor-charts';
+            // Charts - let recharts bundle with its d3 dependencies naturally
+            if (id.includes('recharts')) {
+              return 'vendor-recharts';
             }
           }
         },
