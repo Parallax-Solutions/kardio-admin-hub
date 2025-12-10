@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Power, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Power, Loader2, Play } from 'lucide-react';
 import { 
   useParserConfigs,
   useActivateParserConfig,
@@ -30,9 +31,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { TestParserDialog } from '@/components/admin/parser-configs/TestParserDialog';
 
 export default function AdminParserConfigs() {
   const navigate = useNavigate();
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
+  const [selectedConfig, setSelectedConfig] = useState<ParserConfig | null>(null);
   const { data: configs = [], isLoading, error } = useParserConfigs();
   const { data: banks = [] } = useBanks();
   const filters = useParserConfigsFilters();
@@ -53,6 +57,11 @@ export default function AdminParserConfigs() {
 
   const openEditDialog = (config: ParserConfig) => {
     navigate(`/admin/parser-configs/${config.id}/edit`);
+  };
+
+  const openTestDialog = (config: ParserConfig) => {
+    setSelectedConfig(config);
+    setTestDialogOpen(true);
   };
 
   const handleToggleActive = async (config: ParserConfig) => {
@@ -171,6 +180,15 @@ export default function AdminParserConfigs() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
+                      title="Test Parser"
+                      onClick={() => openTestDialog(config)}
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
                       onClick={() => openEditDialog(config)}
                     >
                       <Edit2 className="h-4 w-4" />
@@ -223,6 +241,15 @@ export default function AdminParserConfigs() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
+                    title="Test Parser"
+                    onClick={() => openTestDialog(config)}
+                  >
+                    <Play className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => openEditDialog(config)}
                   >
                     <Edit2 className="h-4 w-4" />
@@ -246,6 +273,13 @@ export default function AdminParserConfigs() {
           </Card>
         ))}
       </div>
+
+      <TestParserDialog
+        open={testDialogOpen}
+        onOpenChange={setTestDialogOpen}
+        config={selectedConfig}
+        bankName={selectedConfig ? getBankName(selectedConfig.bankId) : ''}
+      />
     </div>
   );
 }
