@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CreateCurrencyDialog } from './CreateCurrencyDialog';
+import { EditCurrencyDialog } from './EditCurrencyDialog';
 import { CurrencyDetailSheet } from './CurrencyDetailSheet';
 import { format } from 'date-fns';
 
@@ -58,6 +59,7 @@ export function CurrenciesTab() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showOnlyPending, setShowOnlyPending] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
@@ -77,6 +79,11 @@ export function CurrenciesTab() {
   const handleViewDetails = (currency: Currency) => {
     setSelectedCurrency(currency);
     setDetailSheetOpen(true);
+  };
+
+  const handleEditCurrency = (currency: Currency) => {
+    setSelectedCurrency(currency);
+    setEditDialogOpen(true);
   };
 
   return (
@@ -180,7 +187,7 @@ export function CurrenciesTab() {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditCurrency(currency)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
@@ -199,6 +206,11 @@ export function CurrenciesTab() {
       </div>
 
       <CreateCurrencyDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      <EditCurrencyDialog
+        currency={selectedCurrency}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
       <CurrencyDetailSheet
         currency={selectedCurrency}
         open={detailSheetOpen}
