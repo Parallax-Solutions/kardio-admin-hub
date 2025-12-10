@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Filter, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -20,65 +21,81 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MapSynonymSheet } from './MapSynonymSheet';
+import { BulkMapDialog } from './BulkMapDialog';
 import { format } from 'date-fns';
+import { useDebounce } from '@/hooks/useDebounce';
+import {
+  useSynonyms,
+  type CurrencySynonym,
+  type SynonymStatus,
+  type SynonymCreatedBy,
+} from '@/stores/currenciesStore';
+import { TablePagination } from '@/components/ui/table-pagination';
 
-export type SynonymStatus = 'UNMAPPED' | 'MAPPED';
-export type SynonymCreatedBy = 'SYSTEM' | 'ADMIN' | 'AUTO_DETECT';
+export type { SynonymStatus, SynonymCreatedBy, CurrencySynonym };
 
-export interface CurrencySynonym {
-  id: string;
-  rawLabel: string;
-  normalizedLabel: string;
-  status: SynonymStatus;
-  currencyCode: string | null;
-  occurrences: number;
-  firstSeenAt: Date;
-  lastSeenAt: Date;
-  createdBy: SynonymCreatedBy;
-}
-
-// Mock data
-const mockSynonyms: CurrencySynonym[] = [
-  { id: '1', rawLabel: 'US Dollar', normalizedLabel: 'US DOLLAR', status: 'MAPPED', currencyCode: 'USD', occurrences: 1250, firstSeenAt: new Date('2024-01-15'), lastSeenAt: new Date('2024-12-08'), createdBy: 'SYSTEM' },
-  { id: '2', rawLabel: 'Dólares Americanos', normalizedLabel: 'DOLARES AMERICANOS', status: 'MAPPED', currencyCode: 'USD', occurrences: 890, firstSeenAt: new Date('2024-02-01'), lastSeenAt: new Date('2024-12-07'), createdBy: 'SYSTEM' },
-  { id: '3', rawLabel: 'PESO COLOMBIANO', normalizedLabel: 'PESO COLOMBIANO', status: 'UNMAPPED', currencyCode: null, occurrences: 156, firstSeenAt: new Date('2024-11-15'), lastSeenAt: new Date('2024-12-09'), createdBy: 'AUTO_DETECT' },
-  { id: '4', rawLabel: 'Mexican Peso', normalizedLabel: 'MEXICAN PESO', status: 'UNMAPPED', currencyCode: null, occurrences: 89, firstSeenAt: new Date('2024-11-20'), lastSeenAt: new Date('2024-12-08'), createdBy: 'AUTO_DETECT' },
-  { id: '5', rawLabel: 'Colones', normalizedLabel: 'COLONES', status: 'MAPPED', currencyCode: 'CRC', occurrences: 2340, firstSeenAt: new Date('2024-01-01'), lastSeenAt: new Date('2024-12-09'), createdBy: 'SYSTEM' },
-  { id: '6', rawLabel: 'CRC Colones', normalizedLabel: 'CRC COLONES', status: 'MAPPED', currencyCode: 'CRC', occurrences: 567, firstSeenAt: new Date('2024-03-10'), lastSeenAt: new Date('2024-12-05'), createdBy: 'ADMIN' },
-  { id: '7', rawLabel: 'SOLES PERUANOS', normalizedLabel: 'SOLES PERUANOS', status: 'UNMAPPED', currencyCode: null, occurrences: 45, firstSeenAt: new Date('2024-11-25'), lastSeenAt: new Date('2024-12-06'), createdBy: 'AUTO_DETECT' },
-  { id: '8', rawLabel: 'Quetzal', normalizedLabel: 'QUETZAL', status: 'UNMAPPED', currencyCode: null, occurrences: 23, firstSeenAt: new Date('2024-12-01'), lastSeenAt: new Date('2024-12-08'), createdBy: 'AUTO_DETECT' },
-  { id: '9', rawLabel: 'Euro €', normalizedLabel: 'EURO', status: 'MAPPED', currencyCode: 'EUR', occurrences: 234, firstSeenAt: new Date('2024-04-15'), lastSeenAt: new Date('2024-12-04'), createdBy: 'SYSTEM' },
-  { id: '10', rawLabel: 'Euros', normalizedLabel: 'EUROS', status: 'MAPPED', currencyCode: 'EUR', occurrences: 189, firstSeenAt: new Date('2024-05-01'), lastSeenAt: new Date('2024-12-03'), createdBy: 'ADMIN' },
-  { id: '11', rawLabel: 'Peso Argentino', normalizedLabel: 'PESO ARGENTINO', status: 'UNMAPPED', currencyCode: null, occurrences: 12, firstSeenAt: new Date('2024-12-05'), lastSeenAt: new Date('2024-12-09'), createdBy: 'AUTO_DETECT' },
-  { id: '12', rawLabel: 'Real Brasileño', normalizedLabel: 'REAL BRASILENO', status: 'UNMAPPED', currencyCode: null, occurrences: 8, firstSeenAt: new Date('2024-12-07'), lastSeenAt: new Date('2024-12-09'), createdBy: 'AUTO_DETECT' },
-];
+const DEFAULT_PAGE_SIZE = 10;
 
 export function SynonymsTab() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [currencyFilter, setCurrencyFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<SynonymStatus | 'all'>('all');
   const [showOnlyUnmapped, setShowOnlyUnmapped] = useState(true);
   const [selectedSynonyms, setSelectedSynonyms] = useState<string[]>([]);
   const [mapSheetOpen, setMapSheetOpen] = useState(false);
   const [synonymToMap, setSynonymToMap] = useState<CurrencySynonym | null>(null);
+  const [bulkMapDialogOpen, setBulkMapDialogOpen] = useState(false);
+  
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const filteredSynonyms = mockSynonyms.filter((synonym) => {
-    const matchesSearch =
-      synonym.rawLabel.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      synonym.normalizedLabel.toLowerCase().includes(searchQuery.toLowerCase());
+  // Debounce search query
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-    const matchesStatus =
-      statusFilter === 'all' || synonym.status === statusFilter;
+  // Determine effective status filter
+  const effectiveStatus = showOnlyUnmapped ? 'UNMAPPED' : statusFilter;
 
-    const matchesCurrency =
-      currencyFilter === 'all' || synonym.currencyCode === currencyFilter;
-
-    const matchesUnmapped = !showOnlyUnmapped || synonym.status === 'UNMAPPED';
-
-    return matchesSearch && matchesStatus && matchesCurrency && matchesUnmapped;
+  // Fetch synonyms from API
+  // Use isFetching instead of isLoading to keep previous data visible during pagination
+  const { data, isLoading, isFetching, isError } = useSynonyms({
+    search: debouncedSearch,
+    status: effectiveStatus,
+    page,
+    limit: pageSize,
   });
 
-  const uniqueCurrencies = [...new Set(mockSynonyms.map((s) => s.currencyCode).filter(Boolean))];
+  const synonyms = data?.data ?? [];
+  const pagination = data?.pagination;
+  
+  // Show skeleton only on initial load, not during pagination
+  const showSkeleton = isLoading && synonyms.length === 0;
+
+  // Reset to page 1 when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: SynonymStatus | 'all') => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const handleShowOnlyUnmappedChange = (checked: boolean) => {
+    setShowOnlyUnmapped(checked);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1);
+  };
+
+  // Get unique currencies from the fetched synonyms for the filter dropdown
+  const uniqueCurrencies = useMemo(() => 
+    [...new Set(synonyms.map((s) => s.currencyCode).filter(Boolean))] as string[],
+    [synonyms]
+  );
 
   const handleMapClick = (synonym: CurrencySynonym) => {
     setSynonymToMap(synonym);
@@ -87,7 +104,7 @@ export function SynonymsTab() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSynonyms(filteredSynonyms.filter((s) => s.status === 'UNMAPPED').map((s) => s.id));
+      setSelectedSynonyms(synonyms.filter((s) => s.status === 'UNMAPPED').map((s) => s.id));
     } else {
       setSelectedSynonyms([]);
     }
@@ -101,7 +118,7 @@ export function SynonymsTab() {
     }
   };
 
-  const unmappedCount = filteredSynonyms.filter((s) => s.status === 'UNMAPPED').length;
+  const unmappedCount = synonyms.filter((s) => s.status === 'UNMAPPED').length;
   const allUnmappedSelected = unmappedCount > 0 && selectedSynonyms.length === unmappedCount;
 
   return (
@@ -114,12 +131,12 @@ export function SynonymsTab() {
             <Input
               placeholder="Search by label..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => handleStatusFilterChange(value as SynonymStatus | 'all')}>
               <SelectTrigger className="w-32">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Status" />
@@ -130,19 +147,7 @@ export function SynonymsTab() {
                 <SelectItem value="MAPPED">Mapped</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
-              <SelectTrigger className="w-28">
-                <SelectValue placeholder="Currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {uniqueCurrencies.map((code) => (
-                  <SelectItem key={code} value={code!}>
-                    {code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+{/* Currency filter removed - API handles filtering */}
           </div>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -150,14 +155,19 @@ export function SynonymsTab() {
             <Checkbox
               id="unmapped-only"
               checked={showOnlyUnmapped}
-              onCheckedChange={(checked) => setShowOnlyUnmapped(checked as boolean)}
+              onCheckedChange={(checked) => handleShowOnlyUnmappedChange(checked as boolean)}
             />
             <label htmlFor="unmapped-only" className="text-sm text-muted-foreground cursor-pointer whitespace-nowrap">
               Show only UNMAPPED
             </label>
           </div>
           {selectedSynonyms.length > 0 && (
-            <Button variant="secondary" size="sm" className="gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => setBulkMapDialogOpen(true)}
+            >
               <ArrowRight className="h-4 w-4" />
               Bulk Map ({selectedSynonyms.length})
             </Button>
@@ -166,7 +176,7 @@ export function SynonymsTab() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-card overflow-x-auto">
+      <div className={`rounded-lg border border-border bg-card overflow-x-auto transition-opacity ${isFetching && !isLoading ? 'opacity-60' : ''}`}>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -186,14 +196,33 @@ export function SynonymsTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSynonyms.length === 0 ? (
+            {showSkeleton ? (
+              // Loading skeleton - only on initial load
+              Array.from({ length: pageSize }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell className="sticky left-0 bg-card"><Skeleton className="h-4 w-4" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-14" /></TableCell>
+                </TableRow>
+              ))
+            ) : isError ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-destructive">
+                  Error loading synonyms. Please try again.
+                </TableCell>
+              </TableRow>
+            ) : synonyms.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No synonyms found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredSynonyms.map((synonym) => (
+              synonyms.map((synonym) => (
                 <TableRow key={synonym.id}>
                   <TableCell className="sticky left-0 bg-card">
                     {synonym.status === 'UNMAPPED' && (
@@ -256,10 +285,26 @@ export function SynonymsTab() {
         </Table>
       </div>
 
+      {/* Pagination */}
+      <TablePagination
+        pagination={pagination}
+        onPageChange={setPage}
+        onLimitChange={handlePageSizeChange}
+      />
+
       <MapSynonymSheet
         synonym={synonymToMap}
         open={mapSheetOpen}
         onOpenChange={setMapSheetOpen}
+        onSuccess={() => setSelectedSynonyms([])}
+      />
+
+      <BulkMapDialog
+        synonymIds={selectedSynonyms}
+        synonyms={synonyms}
+        open={bulkMapDialogOpen}
+        onOpenChange={setBulkMapDialogOpen}
+        onSuccess={() => setSelectedSynonyms([])}
       />
     </div>
   );

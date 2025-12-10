@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,13 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import type { Currency } from './CurrenciesTab';
+import { useUpdateCurrencyStatus, type Currency, type CurrencyStatus } from '@/stores/currenciesStore';
 
 const editCurrencySchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
   status: z.enum(['ACTIVE', 'PENDING', 'DEPRECATED']),
 });
 
@@ -41,7 +39,7 @@ interface EditCurrencyDialogProps {
   currency: Currency | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (data: EditCurrencyFormData & { code: string }) => void;
+  onSuccess?: () => void;
 }
 
 export function EditCurrencyDialog({
@@ -50,12 +48,11 @@ export function EditCurrencyDialog({
   onOpenChange,
   onSuccess,
 }: EditCurrencyDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateStatusMutation = useUpdateCurrencyStatus();
 
   const form = useForm<EditCurrencyFormData>({
     resolver: zodResolver(editCurrencySchema),
     defaultValues: {
-      name: '',
       status: 'ACTIVE',
     },
   });
@@ -64,7 +61,6 @@ export function EditCurrencyDialog({
   useEffect(() => {
     if (currency) {
       form.reset({
-        name: currency.name,
         status: currency.status,
       });
     }
@@ -73,20 +69,21 @@ export function EditCurrencyDialog({
   const handleSubmit = async (data: EditCurrencyFormData) => {
     if (!currency) return;
     
-    setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await updateStatusMutation.mutateAsync({
+        code: currency.code,
+        status: data.status as CurrencyStatus,
+      });
       
-      toast.success(`Currency ${currency.code} updated successfully`);
-      onSuccess?.({ ...data, code: currency.code });
+      toast.success(`Currency ${currency.code} status updated to ${data.status}`);
+      onSuccess?.();
       onOpenChange(false);
     } catch (error) {
-      toast.error('Failed to update currency');
-    } finally {
-      setIsSubmitting(false);
+      toast.error('Failed to update currency status');
     }
   };
+
+  const isSubmitting = updateStatusMutation.isPending;
 
   if (!currency) return null;
 
@@ -101,25 +98,22 @@ export function EditCurrencyDialog({
             </code>
           </DialogTitle>
           <DialogDescription>
-            Update the currency name or change its status.
+            Update the status of this currency.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Currency Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="United States Dollar" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Currency name is read-only - API only supports status updates */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Currency Name</label>
+              <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+                {currency?.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Currency name cannot be changed. Only status can be updated.
+              </p>
+            </div>
 
             <FormField
               control={form.control}

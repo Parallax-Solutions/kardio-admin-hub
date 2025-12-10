@@ -25,56 +25,94 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CreateCurrencyDialog } from './CreateCurrencyDialog';
 import { EditCurrencyDialog } from './EditCurrencyDialog';
 import { CurrencyDetailSheet } from './CurrencyDetailSheet';
 import { format } from 'date-fns';
+import { useDebounce } from '@/hooks/useDebounce';
+import {
+  useCurrencies,
+  useDeleteCurrency,
+  type Currency,
+  type CurrencyStatus,
+  type CurrencySource,
+} from '@/stores/currenciesStore';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { TablePagination } from '@/components/ui/table-pagination';
 
-export type CurrencyStatus = 'ACTIVE' | 'PENDING' | 'DEPRECATED';
-export type CurrencySource = 'SYSTEM' | 'AUTO_DETECTED' | 'MANUAL';
+export type { CurrencyStatus, CurrencySource, Currency };
 
-export interface Currency {
-  code: string;
-  name: string;
-  status: CurrencyStatus;
-  source: CurrencySource;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Mock data
-const mockCurrencies: Currency[] = [
-  { code: 'USD', name: 'United States Dollar', status: 'ACTIVE', source: 'SYSTEM', createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
-  { code: 'CRC', name: 'Costa Rican Colón', status: 'ACTIVE', source: 'SYSTEM', createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
-  { code: 'MXN', name: 'Mexican Peso', status: 'ACTIVE', source: 'SYSTEM', createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
-  { code: 'EUR', name: 'Euro', status: 'ACTIVE', source: 'SYSTEM', createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
-  { code: 'COP', name: 'Colombian Peso', status: 'PENDING', source: 'AUTO_DETECTED', createdAt: new Date('2024-11-15'), updatedAt: new Date('2024-11-15') },
-  { code: 'PEN', name: 'Peruvian Sol', status: 'PENDING', source: 'AUTO_DETECTED', createdAt: new Date('2024-11-20'), updatedAt: new Date('2024-11-20') },
-  { code: 'GTQ', name: 'Guatemalan Quetzal', status: 'PENDING', source: 'AUTO_DETECTED', createdAt: new Date('2024-12-01'), updatedAt: new Date('2024-12-01') },
-  { code: 'VEF', name: 'Venezuelan Bolívar', status: 'DEPRECATED', source: 'SYSTEM', createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-06-01') },
-];
+const DEFAULT_PAGE_SIZE = 10;
 
 export function CurrenciesTab() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<CurrencyStatus | 'all'>('all');
   const [showOnlyPending, setShowOnlyPending] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [currencyToDelete, setCurrencyToDelete] = useState<Currency | null>(null);
+  
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const filteredCurrencies = mockCurrencies.filter((currency) => {
-    const matchesSearch =
-      currency.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      currency.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const deleteCurrencyMutation = useDeleteCurrency();
 
-    const matchesStatus =
-      statusFilter === 'all' || currency.status === statusFilter;
+  // Debounce search query to avoid too many API calls
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-    const matchesPending = !showOnlyPending || currency.status === 'PENDING';
+  // Determine effective status filter
+  const effectiveStatus = showOnlyPending ? 'PENDING' : statusFilter;
 
-    return matchesSearch && matchesStatus && matchesPending;
+  // Fetch currencies from API
+  // Use isFetching instead of isLoading to keep previous data visible during pagination
+  const { data, isLoading, isFetching, isError } = useCurrencies({
+    search: debouncedSearch,
+    status: effectiveStatus,
+    page,
+    limit: pageSize,
   });
+
+  const currencies = data?.data ?? [];
+  const pagination = data?.pagination;
+  
+  // Show skeleton only on initial load, not during pagination
+  const showSkeleton = isLoading && currencies.length === 0;
+
+  // Reset to page 1 when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: CurrencyStatus | 'all') => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const handleShowOnlyPendingChange = (checked: boolean) => {
+    setShowOnlyPending(checked);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1);
+  };
 
   const handleViewDetails = (currency: Currency) => {
     setSelectedCurrency(currency);
@@ -84,6 +122,24 @@ export function CurrenciesTab() {
   const handleEditCurrency = (currency: Currency) => {
     setSelectedCurrency(currency);
     setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (currency: Currency) => {
+    setCurrencyToDelete(currency);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!currencyToDelete) return;
+    
+    try {
+      await deleteCurrencyMutation.mutateAsync(currencyToDelete.code);
+      toast.success(`Currency ${currencyToDelete.code} deleted successfully`);
+      setDeleteDialogOpen(false);
+      setCurrencyToDelete(null);
+    } catch (error) {
+      toast.error('Failed to delete currency');
+    }
   };
 
   return (
@@ -96,11 +152,11 @@ export function CurrenciesTab() {
             <Input
               placeholder="Search by code or name..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value) => handleStatusFilterChange(value as CurrencyStatus | 'all')}>
             <SelectTrigger className="w-full sm:w-40">
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Status" />
@@ -116,7 +172,7 @@ export function CurrenciesTab() {
             <Checkbox
               id="pending-only"
               checked={showOnlyPending}
-              onCheckedChange={(checked) => setShowOnlyPending(checked as boolean)}
+              onCheckedChange={(checked) => handleShowOnlyPendingChange(checked as boolean)}
             />
             <label htmlFor="pending-only" className="text-sm text-muted-foreground cursor-pointer">
               Show only PENDING
@@ -130,7 +186,7 @@ export function CurrenciesTab() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
+      <div className={`rounded-lg border border-border bg-card transition-opacity ${isFetching && !isLoading ? 'opacity-60' : ''}`}>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -144,14 +200,33 @@ export function CurrenciesTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCurrencies.length === 0 ? (
+            {showSkeleton ? (
+              // Loading skeleton - only on initial load
+              Array.from({ length: pageSize }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-6 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                </TableRow>
+              ))
+            ) : isError ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-32 text-center text-destructive">
+                  Error loading currencies. Please try again.
+                </TableCell>
+              </TableRow>
+            ) : currencies.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No currencies found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCurrencies.map((currency) => (
+              currencies.map((currency) => (
                 <TableRow
                   key={currency.code}
                   className="cursor-pointer"
@@ -189,9 +264,12 @@ export function CurrenciesTab() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditCurrency(currency); }}>
                           <Pencil className="mr-2 h-4 w-4" />
-                          Edit
+                          Edit Status
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteClick(currency); }}
+                          className="text-destructive focus:text-destructive"
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
@@ -205,6 +283,13 @@ export function CurrenciesTab() {
         </Table>
       </div>
 
+      {/* Pagination */}
+      <TablePagination
+        pagination={pagination}
+        onPageChange={setPage}
+        onLimitChange={handlePageSizeChange}
+      />
+
       <CreateCurrencyDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       <EditCurrencyDialog
         currency={selectedCurrency}
@@ -216,6 +301,29 @@ export function CurrenciesTab() {
         open={detailSheetOpen}
         onOpenChange={setDetailSheetOpen}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Currency</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{currencyToDelete?.code}</strong> ({currencyToDelete?.name})?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteCurrencyMutation.isPending}
+            >
+              {deleteCurrencyMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

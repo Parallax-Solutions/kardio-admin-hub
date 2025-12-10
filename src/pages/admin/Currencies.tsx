@@ -3,19 +3,25 @@ import { Coins, ArrowLeftRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CurrenciesTab } from '@/components/admin/currencies/CurrenciesTab';
 import { SynonymsTab } from '@/components/admin/currencies/SynonymsTab';
-
-// Mock data for summary stats
-const summaryStats = {
-  pendingCurrencies: 3,
-  unmappedSynonyms: 12,
-  totalCurrencies: 45,
-  totalSynonyms: 128,
-};
+import { useCurrenciesStats, useSynonymsStats } from '@/stores/currenciesStore';
 
 export default function Currencies() {
   const [activeTab, setActiveTab] = useState('currencies');
+
+  // Fetch stats from dedicated endpoints
+  const { data: currenciesStats, isLoading: currenciesLoading } = useCurrenciesStats();
+  const { data: synonymsStats, isLoading: synonymsLoading } = useSynonymsStats();
+
+  // Extract stats
+  const pendingCurrencies = currenciesStats?.byStatus?.PENDING ?? 0;
+  const totalCurrencies = currenciesStats?.total ?? 0;
+  const unmappedSynonyms = synonymsStats?.byStatus?.UNMAPPED ?? 0;
+  const totalSynonyms = synonymsStats?.total ?? 0;
+
+  const isLoading = currenciesLoading || synonymsLoading;
 
   return (
     <div className="space-y-6">
@@ -28,27 +34,31 @@ export default function Currencies() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <SummaryCard
           label="Pending Currencies"
-          value={summaryStats.pendingCurrencies}
+          value={pendingCurrencies}
           icon={AlertCircle}
           variant="warning"
+          isLoading={isLoading}
         />
         <SummaryCard
           label="Unmapped Synonyms"
-          value={summaryStats.unmappedSynonyms}
+          value={unmappedSynonyms}
           icon={ArrowLeftRight}
           variant="destructive"
+          isLoading={isLoading}
         />
         <SummaryCard
           label="Total Currencies"
-          value={summaryStats.totalCurrencies}
+          value={totalCurrencies}
           icon={Coins}
           variant="default"
+          isLoading={isLoading}
         />
         <SummaryCard
           label="Total Synonyms"
-          value={summaryStats.totalSynonyms}
+          value={totalSynonyms}
           icon={CheckCircle2}
           variant="default"
+          isLoading={isLoading}
         />
       </div>
 
@@ -58,18 +68,18 @@ export default function Currencies() {
           <TabsTrigger value="currencies" className="gap-2">
             <Coins className="h-4 w-4" />
             Currencies
-            {summaryStats.pendingCurrencies > 0 && (
+            {pendingCurrencies > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-xs">
-                {summaryStats.pendingCurrencies}
+                {pendingCurrencies}
               </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="synonyms" className="gap-2">
             <ArrowLeftRight className="h-4 w-4" />
             Synonyms
-            {summaryStats.unmappedSynonyms > 0 && (
+            {unmappedSynonyms > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1.5 text-xs">
-                {summaryStats.unmappedSynonyms}
+                {unmappedSynonyms}
               </Badge>
             )}
           </TabsTrigger>
@@ -92,9 +102,10 @@ interface SummaryCardProps {
   value: number;
   icon: React.ComponentType<{ className?: string }>;
   variant: 'default' | 'warning' | 'destructive';
+  isLoading?: boolean;
 }
 
-function SummaryCard({ label, value, icon: Icon, variant }: SummaryCardProps) {
+function SummaryCard({ label, value, icon: Icon, variant, isLoading }: SummaryCardProps) {
   const variantStyles = {
     default: 'border-border bg-card',
     warning: 'border-yellow-500/30 bg-yellow-500/5',
@@ -119,9 +130,13 @@ function SummaryCard({ label, value, icon: Icon, variant }: SummaryCardProps) {
         <Icon className={`h-4 w-4 ${iconStyles[variant]}`} />
         <span className="text-xs text-muted-foreground sm:text-sm">{label}</span>
       </div>
-      <p className={`mt-1 text-xl font-bold sm:text-2xl ${valueStyles[variant]}`}>
-        {value}
-      </p>
+      {isLoading ? (
+        <Skeleton className="mt-1 h-7 w-12 sm:h-8" />
+      ) : (
+        <p className={`mt-1 text-xl font-bold sm:text-2xl ${valueStyles[variant]}`}>
+          {value}
+        </p>
+      )}
     </div>
   );
 }

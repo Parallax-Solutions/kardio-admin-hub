@@ -4,6 +4,14 @@
 /* eslint-disable */
 export type UpdateParserConfigDto = {
     /**
+     * Bank ID to associate this parser config with
+     */
+    bankId?: string;
+    /**
+     * Type of email this parser handles
+     */
+    emailKind?: UpdateParserConfigDto.emailKind;
+    /**
      * Semantic version of the parser config
      */
     version?: string;
@@ -31,12 +39,19 @@ export type UpdateParserConfigDto = {
      * AI parsing configuration
      */
     aiConfig?: Record<string, any>;
-    /**
-     * Sample email HTML for testing parser rules
-     */
-    sampleEmailHtml?: string;
 };
 export namespace UpdateParserConfigDto {
+    /**
+     * Type of email this parser handles
+     */
+    export enum emailKind {
+        TRANSACTION_NOTIFICATION = 'TRANSACTION_NOTIFICATION',
+        STATEMENT = 'STATEMENT',
+        BALANCE_ALERT = 'BALANCE_ALERT',
+        SECURITY_ALERT = 'SECURITY_ALERT',
+        PROMOTIONAL = 'PROMOTIONAL',
+        OTHER = 'OTHER',
+    }
     /**
      * Parsing strategy to use
      */

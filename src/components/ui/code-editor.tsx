@@ -265,18 +265,7 @@ export function CodeEditor({
   const handlePaste = (e: React.ClipboardEvent) => {
     if ((formatOnPaste || cleanOnPaste) && language === 'markup') {
       e.preventDefault();
-      let pastedText = e.clipboardData.getData('text');
-      
-      // Clean first if enabled
-      if (cleanOnPaste) {
-        pastedText = cleanHtml(pastedText);
-      }
-      
-      // Then format if enabled
-      if (formatOnPaste) {
-        pastedText = formatHtml(pastedText);
-      }
-      
+      const pastedText = e.clipboardData.getData('text');
       onChange(pastedText);
     }
   };

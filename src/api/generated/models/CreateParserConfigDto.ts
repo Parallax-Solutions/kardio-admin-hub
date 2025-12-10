@@ -39,10 +39,6 @@ export type CreateParserConfigDto = {
      * AI parsing configuration
      */
     aiConfig?: Record<string, any>;
-    /**
-     * Sample email HTML for testing parser rules
-     */
-    sampleEmailHtml?: string;
 };
 export namespace CreateParserConfigDto {
     /**

@@ -82,3 +82,50 @@ export {
   type UserRole,
   type UsersFilters,
 } from './usersStore';
+
+// Currencies Store - TanStack Query + Zustand UI
+export {
+  // Query hooks
+  useCurrencies,
+  useCurrency,
+  useCreateCurrency,
+  useUpdateCurrencyStatus,
+  useDeleteCurrency,
+  useCurrenciesStats,
+  useSynonyms,
+  useUnmappedSynonyms,
+  useSynonymsByCurrency,
+  useSynonym,
+  useMapSynonym,
+  useBulkMapSynonyms,
+  useSynonymsStats,
+  // UI state
+  useCurrenciesUIStore,
+  useCurrenciesFilters,
+  useSetCurrenciesFilters,
+  useResetCurrenciesFilters,
+  useSynonymsFilters,
+  useSetSynonymsFilters,
+  useResetSynonymsFilters,
+  useSelectedCurrency,
+  useSetSelectedCurrency,
+  useSelectedSynonym,
+  useSetSelectedSynonym,
+  useSelectedSynonymIds,
+  useSetSelectedSynonymIds,
+  useToggleSynonymSelection,
+  useClearSynonymSelection,
+  // Query keys
+  currenciesKeys,
+  synonymsKeys,
+  // Types
+  type Currency,
+  type CurrencyStatus,
+  type CurrencySource,
+  type CurrencySynonym,
+  type SynonymStatus,
+  type SynonymCreatedBy,
+  type CurrenciesFilters,
+  type SynonymsFilters,
+  type PaginationInfo,
+} from './currenciesStore';

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Check, ChevronsUpDown, Plus, ArrowRight, Calendar, Hash, Eye } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus, ArrowRight, Calendar, Hash, Eye, Loader2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Command,
   CommandEmpty,
@@ -28,39 +29,43 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CreateCurrencyDialog } from './CreateCurrencyDialog';
-import type { CurrencySynonym } from './SynonymsTab';
+import { useCurrencies, useMapSynonym, type CurrencySynonym } from '@/stores/currenciesStore';
 
 interface MapSynonymSheetProps {
   synonym: CurrencySynonym | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
-
-// Mock available currencies
-const availableCurrencies = [
-  { code: 'USD', name: 'United States Dollar', status: 'ACTIVE' as const },
-  { code: 'CRC', name: 'Costa Rican Colón', status: 'ACTIVE' as const },
-  { code: 'MXN', name: 'Mexican Peso', status: 'ACTIVE' as const },
-  { code: 'EUR', name: 'Euro', status: 'ACTIVE' as const },
-  { code: 'COP', name: 'Colombian Peso', status: 'PENDING' as const },
-  { code: 'PEN', name: 'Peruvian Sol', status: 'PENDING' as const },
-  { code: 'GTQ', name: 'Guatemalan Quetzal', status: 'PENDING' as const },
-  { code: 'ARS', name: 'Argentine Peso', status: 'ACTIVE' as const },
-  { code: 'BRL', name: 'Brazilian Real', status: 'ACTIVE' as const },
-  { code: 'CLP', name: 'Chilean Peso', status: 'ACTIVE' as const },
-];
 
 export function MapSynonymSheet({
   synonym,
   open,
   onOpenChange,
+  onSuccess,
 }: MapSynonymSheetProps) {
-  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(
-    synonym?.currencyCode ?? null
-  );
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch currencies from API
+  const { data: currenciesData, isLoading: currenciesLoading } = useCurrencies({
+    status: 'all',
+    page: 1,
+    limit: 100,
+  });
+
+  const currencies = currenciesData?.data ?? [];
+
+  // Map synonym mutation
+  const mapSynonymMutation = useMapSynonym();
+
+  // Reset selected currency when synonym changes
+  useEffect(() => {
+    if (synonym) {
+      setSelectedCurrency(synonym.currencyCode);
+    }
+  }, [synonym]);
 
   if (!synonym) return null;
 
@@ -70,17 +75,20 @@ export function MapSynonymSheet({
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const result = await mapSynonymMutation.mutateAsync({
+        id: synonym.id,
+        currencyCode: selectedCurrency,
+      });
       
-      toast.success(`Synonym mapped to ${selectedCurrency} successfully`);
+      const transactionsUpdated = result.data?.transactionsUpdated ?? 0;
+      toast.success(
+        `Synonym mapped to ${selectedCurrency} successfully. ${transactionsUpdated} transactions updated.`
+      );
+      onSuccess?.();
       onOpenChange(false);
     } catch (error) {
       toast.error('Failed to map synonym');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -90,9 +98,11 @@ export function MapSynonymSheet({
     onOpenChange(false);
   };
 
-  const selectedCurrencyData = availableCurrencies.find(
+  const selectedCurrencyData = currencies.find(
     (c) => c.code === selectedCurrency
   );
+
+  const isSubmitting = mapSynonymMutation.isPending;
 
   return (
     <>
@@ -169,32 +179,40 @@ export function MapSynonymSheet({
                     <CommandInput placeholder="Search by code or name..." />
                     <CommandList>
                       <CommandEmpty>No currency found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableCurrencies.map((currency) => (
-                          <CommandItem
-                            key={currency.code}
-                            value={`${currency.code} ${currency.name}`}
-                            onSelect={() => {
-                              setSelectedCurrency(currency.code);
-                              setComboboxOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                selectedCurrency === currency.code
-                                  ? 'opacity-100'
-                                  : 'opacity-0'
-                              )}
-                            />
-                            <code className="mr-2 rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-                              {currency.code}
-                            </code>
-                            <span className="flex-1">{currency.name}</span>
-                            <CurrencyStatusBadge status={currency.status} />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
+                      {currenciesLoading ? (
+                        <div className="p-4 space-y-2">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton key={i} className="h-8 w-full" />
+                          ))}
+                        </div>
+                      ) : (
+                        <CommandGroup>
+                          {currencies.map((currency) => (
+                            <CommandItem
+                              key={currency.code}
+                              value={`${currency.code} ${currency.name}`}
+                              onSelect={() => {
+                                setSelectedCurrency(currency.code);
+                                setComboboxOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  selectedCurrency === currency.code
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
+                                )}
+                              />
+                              <code className="mr-2 rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                                {currency.code}
+                              </code>
+                              <span className="flex-1">{currency.name}</span>
+                              <CurrencyStatusBadge status={currency.status} />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
                     </CommandList>
                   </Command>
                 </PopoverContent>
@@ -249,11 +267,19 @@ export function MapSynonymSheet({
   );
 }
 
-function CurrencyStatusBadge({ status }: { status: 'ACTIVE' | 'PENDING' }) {
+function CurrencyStatusBadge({ status }: { status: 'ACTIVE' | 'PENDING' | 'DEPRECATED' }) {
   if (status === 'ACTIVE') {
     return (
       <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
         ACTIVE
+      </Badge>
+    );
+  }
+
+  if (status === 'DEPRECATED') {
+    return (
+      <Badge variant="outline" className="text-[10px] bg-muted text-muted-foreground">
+        DEPRECATED
       </Badge>
     );
   }

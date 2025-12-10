@@ -78,7 +78,7 @@ export class TransactionsService {
             date?: string;
             merchant?: string;
             amount?: number;
-            currency?: string;
+            currencyCode?: string | null;
             categoryId?: string;
             sourceType?: string;
         }>;
@@ -154,7 +154,7 @@ export class TransactionsService {
             date?: string;
             merchant?: string;
             amount?: number;
-            currency?: string;
+            currencyCode?: string | null;
             categoryId?: string;
             sourceType?: string;
         };
@@ -287,7 +287,7 @@ export class TransactionsService {
             date?: string;
             merchant?: string;
             amount?: number;
-            currency?: string;
+            currencyCode?: string | null;
             categoryId?: string;
             sourceType?: string;
         };
@@ -357,7 +357,7 @@ export class TransactionsService {
             date?: string;
             merchant?: string;
             amount?: number;
-            currency?: string;
+            currencyCode?: string | null;
             categoryId?: string;
             sourceType?: string;
         };

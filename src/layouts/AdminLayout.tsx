@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Coins,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/admin/AccessDenied';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
+// Page loading fallback - only for content area
+function PageLoader() {
+  return (
+    <div className="flex h-64 w-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -141,7 +151,9 @@ export function AdminLayout() {
       {/* Main content */}
       <main className="flex-1 pt-14 lg:ml-64 lg:pt-0">
         <div className="container max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:py-8">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>

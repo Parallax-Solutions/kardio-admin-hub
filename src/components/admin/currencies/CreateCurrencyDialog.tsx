@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -29,6 +29,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useCreateCurrency } from '@/stores/currenciesStore';
+import { ApiError } from '@/api/generated/core/ApiError';
+import { CreateCurrencyDto } from '@/api/generated/models/CreateCurrencyDto';
 
 const createCurrencySchema = z.object({
   code: z
@@ -54,33 +57,51 @@ export function CreateCurrencyDialog({
   defaultValues,
   onSuccess,
 }: CreateCurrencyDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createCurrencyMutation = useCreateCurrency();
 
   const form = useForm<CreateCurrencyFormData>({
     resolver: zodResolver(createCurrencySchema),
     defaultValues: {
-      code: defaultValues?.code ?? '',
-      name: defaultValues?.name ?? '',
-      status: defaultValues?.status ?? 'ACTIVE',
+      code: '',
+      name: '',
+      status: 'ACTIVE',
     },
   });
 
+  // Reset form when dialog opens with new default values
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        code: defaultValues?.code ?? '',
+        name: defaultValues?.name ?? '',
+        status: defaultValues?.status ?? 'ACTIVE',
+      });
+    }
+  }, [open, defaultValues, form]);
+
   const handleSubmit = async (data: CreateCurrencyFormData) => {
-    setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await createCurrencyMutation.mutateAsync({
+        code: data.code,
+        name: data.name,
+        status: CreateCurrencyDto.status[data.status as keyof typeof CreateCurrencyDto.status],
+      });
       
       toast.success(`Currency ${data.code} created successfully`);
       onSuccess?.(data);
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      toast.error('Failed to create currency');
-    } finally {
-      setIsSubmitting(false);
+      if (error instanceof ApiError && error.status === 409) {
+        toast.error(`Currency ${data.code} already exists`);
+        form.setError('code', { message: 'This currency code already exists' });
+      } else {
+        toast.error('Failed to create currency');
+      }
     }
   };
+
+  const isSubmitting = createCurrencyMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

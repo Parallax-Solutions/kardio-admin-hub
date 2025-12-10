@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Coins, Calendar, RefreshCw, Tag, ArrowRight } from 'lucide-react';
+import { Coins, Calendar, RefreshCw, Tag, ArrowRight, Loader2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -10,6 +10,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSynonymsByCurrency } from '@/stores/currenciesStore';
 import type { Currency, CurrencyStatus, CurrencySource } from './CurrenciesTab';
 
 interface CurrencyDetailSheetProps {
@@ -18,19 +20,16 @@ interface CurrencyDetailSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Mock associated synonyms
-const mockAssociatedSynonyms = [
-  { id: '1', rawLabel: 'US Dollar', occurrences: 1250 },
-  { id: '2', rawLabel: 'Dólares Americanos', occurrences: 890 },
-  { id: '3', rawLabel: 'USD Dollars', occurrences: 234 },
-  { id: '4', rawLabel: 'American Dollar', occurrences: 156 },
-];
-
 export function CurrencyDetailSheet({
   currency,
   open,
   onOpenChange,
 }: CurrencyDetailSheetProps) {
+  // Fetch synonyms for this currency
+  const { data: synonyms, isLoading: synonymsLoading } = useSynonymsByCurrency(
+    open ? currency?.code : undefined
+  );
+
   if (!currency) return null;
 
   return (
@@ -81,22 +80,34 @@ export function CurrencyDetailSheet({
               <h4 className="mb-3 text-sm font-medium text-foreground">
                 Associated Synonyms
               </h4>
-              <div className="space-y-2">
-                {mockAssociatedSynonyms.map((synonym) => (
-                  <div
-                    key={synonym.id}
-                    className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-sm">{synonym.rawLabel}</span>
+              {synonymsLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : synonyms && synonyms.length > 0 ? (
+                <div className="space-y-2">
+                  {synonyms.map((synonym) => (
+                    <div
+                      key={synonym.id}
+                      className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">{synonym.rawLabel}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {synonym.occurrences.toLocaleString()} occurrences
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {synonym.occurrences.toLocaleString()} occurrences
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No synonyms mapped to this currency yet.
+                </p>
+              )}
               <p className="mt-2 text-xs text-muted-foreground">
                 These synonyms are mapped to this currency and will be automatically recognized.
               </p>

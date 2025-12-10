@@ -18,7 +18,7 @@ export type CreateTransactionDto = {
     /**
      * ISO 4217 currency code
      */
-    currency: string;
+    currencyCode?: string;
     /**
      * ID of the category to assign
      */
@@ -36,12 +36,8 @@ export type CreateTransactionDto = {
      */
     authCode?: string;
     /**
-     * Transaction reference number
+     * Transaction reference number from the bank
      */
     reference?: string;
-    /**
-     * Type of transaction (e.g., PURCHASE, WITHDRAWAL)
-     */
-    transactionType?: string;
 };
 
