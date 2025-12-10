@@ -107,8 +107,8 @@ export function SynonymsTab() {
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1 sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -118,30 +118,34 @@ export function SynonymsTab() {
               className="pl-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-36">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="UNMAPPED">Unmapped</SelectItem>
-              <SelectItem value="MAPPED">Mapped</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
-            <SelectTrigger className="w-full sm:w-32">
-              <SelectValue placeholder="Currency" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Currencies</SelectItem>
-              {uniqueCurrencies.map((code) => (
-                <SelectItem key={code} value={code!}>
-                  {code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="UNMAPPED">Unmapped</SelectItem>
+                <SelectItem value="MAPPED">Mapped</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
+              <SelectTrigger className="w-28">
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {uniqueCurrencies.map((code) => (
+                  <SelectItem key={code} value={code!}>
+                    {code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Checkbox
               id="unmapped-only"
@@ -152,34 +156,33 @@ export function SynonymsTab() {
               Show only UNMAPPED
             </label>
           </div>
+          {selectedSynonyms.length > 0 && (
+            <Button variant="secondary" size="sm" className="gap-2">
+              <ArrowRight className="h-4 w-4" />
+              Bulk Map ({selectedSynonyms.length})
+            </Button>
+          )}
         </div>
-        {selectedSynonyms.length > 0 && (
-          <Button variant="secondary" className="gap-2">
-            <ArrowRight className="h-4 w-4" />
-            Bulk Map ({selectedSynonyms.length})
-          </Button>
-        )}
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
+      <div className="rounded-lg border border-border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-12">
+              <TableHead className="w-10 sticky left-0 bg-card">
                 <Checkbox
                   checked={allUnmappedSelected}
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all unmapped"
                 />
               </TableHead>
-              <TableHead>Raw Label</TableHead>
-              <TableHead className="hidden md:table-cell">Normalized</TableHead>
-              <TableHead className="w-28">Status</TableHead>
-              <TableHead className="w-24">Currency</TableHead>
-              <TableHead className="w-28 hidden sm:table-cell">Occurrences</TableHead>
-              <TableHead className="w-28 hidden lg:table-cell">Last Seen</TableHead>
-              <TableHead className="w-24"></TableHead>
+              <TableHead className="min-w-[180px]">Raw Label</TableHead>
+              <TableHead className="min-w-[120px]">Status</TableHead>
+              <TableHead className="min-w-[80px]">Currency</TableHead>
+              <TableHead className="min-w-[120px] hidden sm:table-cell">Occurrences</TableHead>
+              <TableHead className="min-w-[100px] hidden lg:table-cell">Last Seen</TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,7 +195,7 @@ export function SynonymsTab() {
             ) : (
               filteredSynonyms.map((synonym) => (
                 <TableRow key={synonym.id}>
-                  <TableCell>
+                  <TableCell className="sticky left-0 bg-card">
                     {synonym.status === 'UNMAPPED' && (
                       <Checkbox
                         checked={selectedSynonyms.includes(synonym.id)}
@@ -202,10 +205,10 @@ export function SynonymsTab() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{synonym.rawLabel}</div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <code className="text-xs text-muted-foreground font-mono">
+                    <div className="font-medium truncate max-w-[200px]" title={synonym.rawLabel}>
+                      {synonym.rawLabel}
+                    </div>
+                    <code className="text-xs text-muted-foreground font-mono md:hidden">
                       {synonym.normalizedLabel}
                     </code>
                   </TableCell>
@@ -214,7 +217,7 @@ export function SynonymsTab() {
                   </TableCell>
                   <TableCell>
                     {synonym.currencyCode ? (
-                      <code className="rounded bg-muted px-2 py-1 font-mono text-sm font-medium">
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-medium">
                         {synonym.currencyCode}
                       </code>
                     ) : (
@@ -225,16 +228,15 @@ export function SynonymsTab() {
                     <OccurrencesIndicator count={synonym.occurrences} />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
-                    {format(synonym.lastSeenAt, 'MMM d, yyyy')}
+                    {format(synonym.lastSeenAt, 'MMM d')}
                   </TableCell>
                   <TableCell>
                     {synonym.status === 'UNMAPPED' ? (
                       <Button
                         size="sm"
                         onClick={() => handleMapClick(synonym)}
-                        className="gap-1.5"
+                        className="gap-1"
                       >
-                        <ArrowRight className="h-3.5 w-3.5" />
                         Map
                       </Button>
                     ) : (
