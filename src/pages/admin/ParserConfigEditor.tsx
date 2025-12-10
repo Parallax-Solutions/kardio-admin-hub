@@ -40,6 +40,7 @@ interface ParserConfigForm {
   version: string;
   strategy: 'RULE_BASED' | 'AI' | 'HYBRID';
   emailKind: EmailKind;
+  isActive: boolean;
   senderPatterns: string[];
   subjectPatterns: string[];
   fields: ParserField[];
@@ -71,6 +72,7 @@ export default function ParserConfigEditor() {
     version: 'v1.0',
     strategy: 'RULE_BASED',
     emailKind: EmailKind.TRANSACTION_NOTIFICATION,
+    isActive: true,
     senderPatterns: [],
     subjectPatterns: [],
     fields: [],
@@ -102,6 +104,7 @@ export default function ParserConfigEditor() {
         version: existingConfig.version,
         strategy: existingConfig.strategy,
         emailKind: existingConfig.emailKind,
+        isActive: existingConfig.isActive,
         senderPatterns: existingConfig.emailSenderPatterns || [],
         subjectPatterns: existingConfig.subjectPatterns || [],
         fields: mappedFields,
@@ -121,6 +124,7 @@ export default function ParserConfigEditor() {
   }, [existingConfig, isEditing]);
 
   const [aiConfigOpen, setAiConfigOpen] = useState(false);
+  const [newlyAddedFieldId, setNewlyAddedFieldId] = useState<string | null>(null);
   
   const isLoading = banksLoading || (isEditing && configLoading);
 
@@ -155,14 +159,16 @@ export default function ParserConfigEditor() {
   } | null>(null);
 
   const addField = () => {
+    const newId = crypto.randomUUID();
     const newField: ParserField = {
-      id: crypto.randomUUID(),
+      id: newId,
       fieldName: '',
       required: false,
       defaultValue: '',
       transform: '',
       extractors: [],
     };
+    setNewlyAddedFieldId(newId);
     setForm({ ...form, fields: [...form.fields, newField] });
   };
 
@@ -242,7 +248,7 @@ export default function ParserConfigEditor() {
           validations: form.validations,
         },
         aiConfig: form.strategy !== 'RULE_BASED' ? form.aiConfig : undefined,
-        isActive: false,
+        isActive: form.isActive,
       };
 
       if (isEditing && id) {
@@ -251,8 +257,8 @@ export default function ParserConfigEditor() {
       } else {
         await createConfig.mutateAsync(payload as Parameters<typeof createConfig.mutateAsync>[0]);
         toast.success('Parser config created!');
+        navigate('/admin/parser-configs');
       }
-      navigate('/admin/parser-configs');
     } catch (error) {
       toast.error('Error saving parser config');
       console.error(error);
@@ -547,6 +553,7 @@ export default function ParserConfigEditor() {
                           index={index}
                           onChange={(updated) => updateField(index, updated)}
                           onRemove={() => removeField(index)}
+                          defaultOpen={field.id === newlyAddedFieldId}
                         />
                       ))}
                     </div>

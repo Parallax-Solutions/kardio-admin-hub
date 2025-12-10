@@ -53,10 +53,11 @@ interface FieldCardProps {
   index: number;
   onChange: (field: ParserField) => void;
   onRemove: () => void;
+  defaultOpen?: boolean;
 }
 
-export function FieldCard({ field, index, onChange, onRemove }: FieldCardProps) {
-  const [isOpen, setIsOpen] = useState(true);
+export function FieldCard({ field, index, onChange, onRemove, defaultOpen = false }: FieldCardProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const addExtractor = () => {
     const newExtractor: Extractor = {
