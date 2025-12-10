@@ -101,13 +101,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function AdminLayout() {
   const { isAdmin } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
 
-  // TODO: Remove this bypass after testing currencies page
-  const bypassAuthRoutes = ['/admin/currencies'];
-  const shouldBypassAuth = bypassAuthRoutes.some(route => location.pathname.startsWith(route));
-
-  if (!isAdmin && !shouldBypassAuth) {
+  if (!isAdmin) {
     return <AccessDenied />;
   }
 
