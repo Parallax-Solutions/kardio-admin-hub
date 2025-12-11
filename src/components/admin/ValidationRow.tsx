@@ -16,9 +16,9 @@ export type ValidationRuleType = 'REQUIRED' | 'MIN' | 'MAX' | 'PATTERN' | 'ENUM'
 export interface Validation {
   id: string;
   field: FieldName | '';
-  ruleType: ValidationRuleType;
-  value: string;
-  errorMessage: string;
+  rule: ValidationRuleType;
+  value?: any;
+  errorMessage?: string;
 }
 
 interface ValidationRowProps {
@@ -54,9 +54,9 @@ export function ValidationRow({ validation, onChange, onRemove }: ValidationRowP
 
         <div className="col-span-2">
           <Select
-            value={validation.ruleType}
+            value={validation.rule}
             onValueChange={(value: ValidationRuleType) =>
-              onChange({ ...validation, ruleType: value })
+              onChange({ ...validation, rule: value })
             }
           >
             <SelectTrigger className="h-9 text-xs">
@@ -78,7 +78,7 @@ export function ValidationRow({ validation, onChange, onRemove }: ValidationRowP
             onChange={(e) => onChange({ ...validation, value: e.target.value })}
             placeholder="Value"
             className="h-9 text-xs"
-            disabled={validation.ruleType === 'REQUIRED'}
+            disabled={validation.rule === 'REQUIRED'}
           />
         </div>
 
@@ -131,9 +131,9 @@ export function ValidationRow({ validation, onChange, onRemove }: ValidationRowP
             <div className="space-y-1">
               <Label className="text-[10px] text-muted-foreground">Rule</Label>
               <Select
-                value={validation.ruleType}
+                value={validation.rule}
                 onValueChange={(value: ValidationRuleType) =>
-                  onChange({ ...validation, ruleType: value })
+                  onChange({ ...validation, rule: value })
                 }
               >
                 <SelectTrigger className="h-8 text-[10px]">
@@ -167,7 +167,7 @@ export function ValidationRow({ validation, onChange, onRemove }: ValidationRowP
               onChange={(e) => onChange({ ...validation, value: e.target.value })}
               placeholder="Value"
               className="h-8 text-[10px]"
-              disabled={validation.ruleType === 'REQUIRED'}
+              disabled={validation.rule === 'REQUIRED'}
             />
           </div>
           <div className="space-y-1">

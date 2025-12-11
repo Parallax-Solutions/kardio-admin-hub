@@ -23,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { TagInput } from '@/components/admin/TagInput';
-import { FieldCard, ParserField, type Extractor } from '@/components/admin/FieldCard';
+import { FieldCard, ParserField, type Extractor, type TransformOptions } from '@/components/admin/FieldCard';
 import { ValidationRow, Validation } from '@/components/admin/ValidationRow';
 import { useBanks, useParserConfig, useCreateParserConfig, useUpdateParserConfig, useTestParser, EmailKind } from '@/stores';
 import { toast } from 'sonner';
@@ -89,14 +89,17 @@ export default function ParserConfigEditor() {
   useEffect(() => {
     if (existingConfig && isEditing) {
       // Map backend fields (fieldName) to frontend fields (name)
-      const backendFields = (existingConfig.rules as { fields?: Array<{ fieldName?: string; name?: string; required?: boolean; defaultValue?: string; transform?: string; extractors?: Extractor[] }> })?.fields || [];
+      const backendFields = (existingConfig.rules as { fields?: Array<{ fieldName?: string; name?: string; required?: boolean; defaultValue?: string; transform?: TransformOptions; extractors?: Extractor[] }> })?.fields || [];
       const mappedFields: ParserField[] = backendFields.map((f) => ({
         id: crypto.randomUUID(),
         fieldName: (f.fieldName || f.name || '') as ParserField['fieldName'],
         required: f.required || false,
-        defaultValue: f.defaultValue || '',
-        transform: f.transform || '',
-        extractors: f.extractors || [],
+        defaultValue: f.defaultValue,
+        transform: f.transform,
+        extractors: (f.extractors || []).map((e) => ({
+          ...e,
+          id: e.id || crypto.randomUUID(),
+        })),
       }));
 
       setForm({
@@ -108,7 +111,13 @@ export default function ParserConfigEditor() {
         senderPatterns: existingConfig.emailSenderPatterns || [],
         subjectPatterns: existingConfig.subjectPatterns || [],
         fields: mappedFields,
-        validations: (existingConfig.rules as { validations?: Validation[] })?.validations || [],
+        validations: ((existingConfig.rules as { validations?: Array<{ field?: string; rule?: string; value?: any; errorMessage?: string }> })?.validations || []).map((v) => ({
+          id: crypto.randomUUID(),
+          field: (v.field || '') as Validation['field'],
+          rule: (v.rule || 'REQUIRED') as Validation['rule'],
+          value: v.value,
+          errorMessage: v.errorMessage,
+        })),
         aiConfig: {
           model: (existingConfig.aiConfig as unknown as AIConfig)?.model || 'gpt-4o-mini',
           systemPrompt: (existingConfig.aiConfig as unknown as AIConfig)?.systemPrompt || '',
@@ -164,8 +173,8 @@ export default function ParserConfigEditor() {
       id: newId,
       fieldName: '',
       required: false,
-      defaultValue: '',
-      transform: '',
+      defaultValue: undefined,
+      transform: undefined,
       extractors: [],
     };
     setNewlyAddedFieldId(newId);
@@ -186,9 +195,7 @@ export default function ParserConfigEditor() {
     const newValidation: Validation = {
       id: crypto.randomUUID(),
       field: '',
-      ruleType: 'REQUIRED',
-      value: '',
-      errorMessage: '',
+      rule: 'REQUIRED',
     };
     setForm({ ...form, validations: [...form.validations, newValidation] });
   };
@@ -226,9 +233,9 @@ export default function ParserConfigEditor() {
       })),
       validations: form.validations.map((v) => ({
         field: v.field || null,
-        ruleType: v.ruleType,
-        value: v.value || null,
-        errorMessage: v.errorMessage || null,
+        rule: v.rule,
+        value: v.value || undefined,
+        errorMessage: v.errorMessage || undefined,
       })),
       aiConfig: form.strategy !== 'RULE_BASED' ? form.aiConfig : undefined,
     };
@@ -291,7 +298,7 @@ export default function ParserConfigEditor() {
           })),
           validations: form.validations.map((v) => ({
             field: v.field,
-            ruleType: v.ruleType,
+            rule: v.rule,
             value: v.value || undefined,
             errorMessage: v.errorMessage || undefined,
           })),

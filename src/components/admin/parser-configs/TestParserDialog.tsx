@@ -55,10 +55,10 @@ export function TestParserDialog({ open, onOpenChange, config, bankName }: TestP
           name?: string; 
           required?: boolean; 
           defaultValue?: string; 
-          transform?: string; 
+          transform?: { type: string; locale?: string; dateFormat?: string; layout?: string[]; optionalTokens?: string[] }; 
           extractors?: Array<{ type: string; pattern: string; flags?: string; captureGroup?: number }> 
         }>; 
-        validations?: Array<{ field: string; ruleType: string; value?: string; errorMessage?: string }> 
+        validations?: Array<{ field: string; rule: string; value?: any; errorMessage?: string }> 
       };
 
       const payload = {
@@ -77,7 +77,7 @@ export function TestParserDialog({ open, onOpenChange, config, bankName }: TestP
           })),
           validations: (rules?.validations || []).map((v) => ({
             field: v.field,
-            ruleType: v.ruleType,
+            rule: v.rule,
             value: v.value || undefined,
             errorMessage: v.errorMessage || undefined,
           })),
