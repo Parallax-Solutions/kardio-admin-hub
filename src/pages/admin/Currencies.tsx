@@ -3,9 +3,9 @@ import { Coins, ArrowLeftRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CurrenciesTab } from '@/components/admin/currencies/CurrenciesTab';
 import { SynonymsTab } from '@/components/admin/currencies/SynonymsTab';
+import { SummaryCard } from '@/components/admin/currencies/SummaryCard';
 import { useCurrenciesStats, useSynonymsStats } from '@/stores/currenciesStore';
 
 export default function Currencies() {
@@ -93,50 +93,6 @@ export default function Currencies() {
           <SynonymsTab />
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-interface SummaryCardProps {
-  label: string;
-  value: number;
-  icon: React.ComponentType<{ className?: string }>;
-  variant: 'default' | 'warning' | 'destructive';
-  isLoading?: boolean;
-}
-
-function SummaryCard({ label, value, icon: Icon, variant, isLoading }: SummaryCardProps) {
-  const variantStyles = {
-    default: 'border-border bg-card',
-    warning: 'border-yellow-500/30 bg-yellow-500/5',
-    destructive: 'border-destructive/30 bg-destructive/5',
-  };
-
-  const iconStyles = {
-    default: 'text-muted-foreground',
-    warning: 'text-yellow-500',
-    destructive: 'text-destructive',
-  };
-
-  const valueStyles = {
-    default: 'text-foreground',
-    warning: 'text-yellow-600 dark:text-yellow-400',
-    destructive: 'text-destructive',
-  };
-
-  return (
-    <div className={`rounded-lg border p-3 sm:p-4 ${variantStyles[variant]}`}>
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${iconStyles[variant]}`} />
-        <span className="text-xs text-muted-foreground sm:text-sm">{label}</span>
-      </div>
-      {isLoading ? (
-        <Skeleton className="mt-1 h-7 w-12 sm:h-8" />
-      ) : (
-        <p className={`mt-1 text-xl font-bold sm:text-2xl ${valueStyles[variant]}`}>
-          {value}
-        </p>
-      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UsersService } from '@/api/generated/services/UsersService';
+import { listUsers, getUser, updateUserRole } from '@/api/services/usersService';
 import { UpdateUserRoleDto } from '@/api/generated/models/UpdateUserRoleDto';
 import { useMemo } from 'react';
 
@@ -95,8 +95,8 @@ export function useUsers() {
   const query = useQuery({
     queryKey: usersKeys.list(),
     queryFn: async () => {
-      const response = await UsersService.usersControllerFindAll();
-      const data = response?.data ?? response ?? [];
+      const response = await listUsers();
+      const data = (response as any)?.data ?? response ?? [];
       return Array.isArray(data) ? data.map(transformUser) : [];
     },
   });
@@ -118,8 +118,8 @@ export function useUser(id: string | undefined) {
   return useQuery({
     queryKey: usersKeys.detail(id!),
     queryFn: async () => {
-      const response = await UsersService.usersControllerFindOne(id!);
-      const data = response?.data ?? response;
+      const response = await getUser(id!);
+      const data = (response as any)?.data ?? response;
       return data ? transformUser(data as Record<string, unknown>) : null;
     },
     enabled: !!id,
@@ -134,7 +134,7 @@ export function useUpdateUserRole() {
       const dto: UpdateUserRoleDto = {
         role: role as UpdateUserRoleDto.role,
       };
-      return UsersService.usersControllerUpdateRole(id, dto);
+      return updateUserRole({ id, role: dto.role });
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: usersKeys.lists() });

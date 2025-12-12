@@ -1,17 +1,22 @@
 import { create } from 'zustand';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ParserConfigsService } from '@/api/generated/services/ParserConfigsService';
-import type { CreateParserConfigDto } from '@/api/generated/models/CreateParserConfigDto';
+import {
+  listParserConfigs,
+  getParserConfig,
+  createParserConfig,
+  updateParserConfig,
+  deleteParserConfig,
+  activateParserConfig,
+  deactivateParserConfig,
+} from '@/api/services/parserConfigsService';
+import { getActiveParserConfigByBank, testParserConfig } from '@/api/services/parserConfigsService';
+import { CreateParserConfigDto } from '@/api/generated/models/CreateParserConfigDto';
 import type { UpdateParserConfigDto } from '@/api/generated/models/UpdateParserConfigDto';
 import type { TestParserConfigDto } from '@/api/generated/models/TestParserConfigDto';
 
-// Tipos UI
-export type ParserStrategy = 'RULE_BASED' | 'AI' | 'HYBRID';
-export enum EmailKind {
-  TRANSACTION_NOTIFICATION = 'TRANSACTION_NOTIFICATION',
-  ACCOUNT_STATEMENT = 'ACCOUNT_STATEMENT',
-  SUBSCRIPTION_NOTIFICATION = 'SUBSCRIPTION_NOTIFICATION',
-}
+// Tipos UI (derivados del contrato OpenAPI)
+export type ParserStrategy = CreateParserConfigDto.strategy;
+export type EmailKind = CreateParserConfigDto.emailKind;
 
 export interface ParserConfig {
   id: string;
@@ -82,21 +87,31 @@ export const useParserConfigsUIStore = create<ParserConfigsUIState>((set) => ({
 
 // Transformar response API → modelo UI
 const transformConfig = (apiConfig: Record<string, unknown>): ParserConfig => {
-  const rawEmailKind = apiConfig.emailKind as string;
-  const emailKind = Object.values(EmailKind).includes(rawEmailKind as EmailKind)
+  const rawEmailKind = apiConfig.emailKind as string | undefined;
+  const allowedEmailKinds = Object.values(CreateParserConfigDto.emailKind) as EmailKind[];
+  const emailKind: EmailKind = allowedEmailKinds.includes(rawEmailKind as EmailKind)
     ? (rawEmailKind as EmailKind)
-    : EmailKind.TRANSACTION_NOTIFICATION;
+    : CreateParserConfigDto.emailKind.TRANSACTION_NOTIFICATION;
+
+  const rawRules = (apiConfig.rules as Record<string, unknown> | null | undefined) ?? null;
+  const rules = rawRules
+    ? {
+        ...rawRules,
+        fields: Array.isArray((rawRules as any).fields) ? (rawRules as any).fields : [],
+        validations: Array.isArray((rawRules as any).validations) ? (rawRules as any).validations : [],
+      }
+    : { fields: [], validations: [] };
 
   return {
     id: (apiConfig.id as string) ?? '',
     bankId: (apiConfig.bankId as string) ?? '',
     version: (apiConfig.version as string) ?? '1.0.0',
-    strategy: (apiConfig.strategy as ParserStrategy) ?? 'RULE_BASED',
+    strategy: (apiConfig.strategy as ParserStrategy) ?? CreateParserConfigDto.strategy.RULE_BASED,
     emailKind,
     isActive: (apiConfig.isActive as boolean) ?? false,
-    emailSenderPatterns: (apiConfig.emailSenderPatterns as string[]) ?? [],
-    subjectPatterns: (apiConfig.subjectPatterns as string[]) ?? [],
-    rules: (apiConfig.rules as Record<string, unknown>) ?? null,
+    emailSenderPatterns: Array.isArray(apiConfig.emailSenderPatterns) ? (apiConfig.emailSenderPatterns as string[]) : [],
+    subjectPatterns: Array.isArray(apiConfig.subjectPatterns) ? (apiConfig.subjectPatterns as string[]) : [],
+    rules,
     aiConfig: (apiConfig.aiConfig as Record<string, unknown>) ?? null,
     sampleEmailHtml: (apiConfig.sampleEmailHtml as string) ?? null,
     createdAt: (apiConfig.createdAt as string) ?? null,
@@ -122,14 +137,14 @@ export function useParserConfigs(filters?: Partial<ParserConfigsFilters>) {
   return useQuery({
     queryKey: parserConfigsKeys.list(activeFilters),
     queryFn: async () => {
-      const response = await ParserConfigsService.parserConfigsControllerFindAll(
-        activeFilters.sortBy,
-        activeFilters.sortOrder,
-        activeFilters.bankId ?? undefined,
-        activeFilters.active ?? undefined,
-        activeFilters.search || undefined
-      );
-      const data = response?.data ?? response ?? [];
+      const response = await listParserConfigs({
+        sortBy: activeFilters.sortBy,
+        sortOrder: activeFilters.sortOrder,
+        bankId: activeFilters.bankId ?? undefined,
+        active: activeFilters.active ?? undefined,
+        search: activeFilters.search || undefined,
+      });
+      const data = (response as any)?.data ?? response ?? [];
       return Array.isArray(data) ? data.map(transformConfig) : [];
     },
   });
@@ -139,8 +154,8 @@ export function useParserConfig(id: string | undefined) {
   return useQuery({
     queryKey: parserConfigsKeys.detail(id!),
     queryFn: async () => {
-      const response = await ParserConfigsService.parserConfigsControllerFindOne(id!);
-      const data = response?.data ?? response;
+      const response = await getParserConfig(id!);
+      const data = (response as any)?.data ?? response;
       return data ? transformConfig(data as Record<string, unknown>) : null;
     },
     enabled: !!id,
@@ -151,8 +166,8 @@ export function useActiveParserConfigByBank(bankId: string | undefined) {
   return useQuery({
     queryKey: parserConfigsKeys.activeByBank(bankId!),
     queryFn: async () => {
-      const response = await ParserConfigsService.parserConfigsControllerFindActiveByBank(bankId!);
-      const data = response?.data ?? response;
+      const response = await getActiveParserConfigByBank(bankId!);
+      const data = (response as any)?.data ?? response;
       return data ? transformConfig(data as Record<string, unknown>) : null;
     },
     enabled: !!bankId,
@@ -163,8 +178,7 @@ export function useCreateParserConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateParserConfigDto) =>
-      ParserConfigsService.parserConfigsControllerCreate(data),
+    mutationFn: (data: CreateParserConfigDto) => createParserConfig(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.lists() });
     },
@@ -176,7 +190,7 @@ export function useUpdateParserConfig() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateParserConfigDto }) =>
-      ParserConfigsService.parserConfigsControllerUpdate(id, data),
+      updateParserConfig(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.detail(id) });
@@ -188,7 +202,7 @@ export function useDeleteParserConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => ParserConfigsService.parserConfigsControllerRemove(id),
+    mutationFn: (id: string) => deleteParserConfig(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.lists() });
     },
@@ -199,7 +213,7 @@ export function useActivateParserConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => ParserConfigsService.parserConfigsControllerActivate(id),
+    mutationFn: (id: string) => activateParserConfig(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.all });
@@ -211,7 +225,7 @@ export function useDeactivateParserConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => ParserConfigsService.parserConfigsControllerDeactivate(id),
+    mutationFn: (id: string) => deactivateParserConfig(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: parserConfigsKeys.detail(id) });
@@ -223,13 +237,13 @@ export function useTestParser() {
   const setTestResult = useParserConfigsUIStore((state) => state.setTestResult);
 
   return useMutation({
-    mutationFn: (data: TestParserConfigDto) =>
-      ParserConfigsService.parserConfigsControllerTestParser(data),
+    mutationFn: (data: TestParserConfigDto) => testParserConfig(data),
     onSuccess: (response) => {
+      const r = response as any;
       const result: TestParserResult = {
-        success: response?.success ?? false,
-        extractedData: response?.data as Record<string, unknown>,
-        errors: response?.errors as string[],
+        success: r?.success ?? false,
+        extractedData: r?.data as Record<string, unknown>,
+        errors: r?.errors as string[],
       };
       setTestResult(result);
     },

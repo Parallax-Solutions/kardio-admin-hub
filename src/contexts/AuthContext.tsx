@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearError,
   } = useAuthStore();
 
-  // Configurar token al cambiar
   useEffect(() => {
     if (accessToken) {
       OpenAPI.TOKEN = accessToken;

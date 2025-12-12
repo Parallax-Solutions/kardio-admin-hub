@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthService } from '@/api/generated/services/AuthService';
 import { OpenAPI } from '@/api/generated/core/OpenAPI';
 import { environment } from '@/config/environment';
 import type { AdminLoginDto } from '@/api/generated/models/AdminLoginDto';
+import { adminLogin, logout as apiLogout, refresh as apiRefresh, getCurrentUser as apiGetCurrentUser } from '@/api/services/authService';
 
 interface User {
   id: string;
@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          const response = await AuthService.adminAuthControllerLogin(credentials);
+          const response = await adminLogin(credentials);
           
           console.log('Login response:', response);
           
@@ -108,7 +108,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         
         try {
-          await AuthService.authControllerLogout();
+          await apiLogout();
         } catch {
           // Ignorar errores de logout, limpiar estado de todas formas
         } finally {
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         try {
-          const response = await AuthService.authControllerRefresh();
+          const response = await apiRefresh();
           
           if (response.success) {
             // El backend maneja los tokens via cookies, 
@@ -160,7 +160,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
 
         try {
-          const response = await AuthService.authControllerGetCurrentUser();
+          const response = await apiGetCurrentUser();
           
           if (response.success && response.data) {
             set({

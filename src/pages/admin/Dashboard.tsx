@@ -7,13 +7,13 @@ import {
   Mail,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useAdminStats } from '@/hooks/useAdminStats';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { StatCard } from '@/components/admin/StatCard';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AdminDashboard() {
-  const { stats, activityData, isLoading } = useAdminStats();
+  const { stats, activityData, isLoading } = useDashboardStats();
 
   if (isLoading) {
     return <div className="animate-pulse">Loading...</div>;

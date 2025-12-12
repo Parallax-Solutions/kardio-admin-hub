@@ -56,7 +56,7 @@ export {
   // Types
   type ParserConfig,
   type ParserStrategy,
-  EmailKind,
+  type EmailKind,
   type TestParserResult,
   type ParserConfigsFilters,
 } from './parserConfigsStore';

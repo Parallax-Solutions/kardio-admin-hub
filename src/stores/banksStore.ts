@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BanksService } from '@/api/generated/services/BanksService';
+import { listBanks, getBank, createBank, updateBank, deleteBank, toggleBankActive } from '@/api/services/banksService';
 import type { CreateBankDto } from '@/api/generated/models/CreateBankDto';
 import type { UpdateBankDto } from '@/api/generated/models/UpdateBankDto';
 
@@ -89,15 +89,9 @@ export function useBanks() {
   return useQuery({
     queryKey: ['banks', 'list'],
     queryFn: async () => {
-      const response = await BanksService.banksControllerFindAll(
-        'name',
-        'asc',
-        undefined,
-        undefined,
-        undefined
-      );
-      console.log('Banks response:', response);
-      return (response.data ?? []).map(transformBank);
+      const response = await listBanks({ sortBy: 'name', sortOrder: 'asc' });
+      const data = (response as { data?: unknown[] })?.data ?? response ?? [];
+      return Array.isArray(data) ? data.map((b) => transformBank(b as any)) : [];
     },
   });
 }
@@ -106,8 +100,9 @@ export function useBank(id: string | undefined) {
   return useQuery({
     queryKey: banksKeys.detail(id!),
     queryFn: async () => {
-      const response = await BanksService.banksControllerFindOne(id!);
-      return response.data ? transformBank(response.data) : null;
+      const response = await getBank(id!);
+      const data = (response as any)?.data ?? response;
+      return data ? transformBank(data as any) : null;
     },
     enabled: !!id,
   });
@@ -117,7 +112,7 @@ export function useCreateBank() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateBankDto) => BanksService.banksControllerCreate(data),
+    mutationFn: (data: CreateBankDto) => createBank(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: banksKeys.lists() });
     },
@@ -129,7 +124,7 @@ export function useUpdateBank() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateBankDto }) =>
-      BanksService.banksControllerUpdate(id, data),
+      updateBank(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: banksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: banksKeys.detail(id) });
@@ -141,7 +136,7 @@ export function useDeleteBank() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => BanksService.banksControllerRemove(id),
+    mutationFn: (id: string) => deleteBank(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: banksKeys.lists() });
     },
@@ -152,7 +147,7 @@ export function useToggleBankActive() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => BanksService.banksControllerToggleActive(id),
+    mutationFn: (id: string) => toggleBankActive(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: banksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: banksKeys.detail(id) });

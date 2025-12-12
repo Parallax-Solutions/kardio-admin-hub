@@ -1,7 +1,22 @@
 import { create } from 'zustand';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { CurrenciesService } from '@/api/generated/services/CurrenciesService';
-import { CurrencySynonymsService } from '@/api/generated/services/CurrencySynonymsService';
+import {
+  listCurrencies,
+  getCurrency,
+  createCurrency,
+  deleteCurrency,
+  updateCurrencyStatus,
+  getCurrenciesStats,
+} from '@/api/services/currenciesService';
+import {
+  listCurrencySynonyms,
+  listUnmappedCurrencySynonyms,
+  listCurrencySynonymsByCurrency,
+  getCurrencySynonym,
+  mapSynonymToCurrency,
+  bulkMapSynonyms,
+  getCurrencySynonymsStats,
+} from '@/api/services/currencySynonymsService';
 import type { CreateCurrencyDto } from '@/api/generated/models/CreateCurrencyDto';
 import type { UpdateCurrencyStatusDto } from '@/api/generated/models/UpdateCurrencyStatusDto';
 import type { BulkMapSynonymsDto } from '@/api/generated/models/BulkMapSynonymsDto';
@@ -221,16 +236,16 @@ export function useCurrencies(filters?: Partial<CurrenciesFilters>) {
   return useQuery({
     queryKey: currenciesKeys.list(effectiveFilters),
     queryFn: async () => {
-      const response = await CurrenciesService.currenciesControllerFindAll(
-        effectiveFilters.page,
-        effectiveFilters.limit,
-        effectiveFilters.search || undefined,
-        effectiveFilters.status === 'all' ? undefined : effectiveFilters.status
-      );
-      
+      const response = await listCurrencies({
+        page: effectiveFilters.page,
+        limit: effectiveFilters.limit,
+        search: effectiveFilters.search || undefined,
+        status: effectiveFilters.status === 'all' ? undefined : effectiveFilters.status,
+      });
+
       return {
-        data: (response.data ?? []).map(transformCurrency),
-        pagination: response.pagination as PaginationInfo | undefined,
+        data: ((response as any)?.data ?? []).map(transformCurrency),
+        pagination: (response as any)?.pagination as PaginationInfo | undefined,
       };
     },
     placeholderData: keepPreviousData,
@@ -241,8 +256,9 @@ export function useCurrency(code: string | undefined) {
   return useQuery({
     queryKey: currenciesKeys.detail(code!),
     queryFn: async () => {
-      const response = await CurrenciesService.currenciesControllerFindOne(code!);
-      return response.data ? transformCurrency(response.data) : null;
+      const response = await getCurrency(code!);
+      const data = (response as any)?.data ?? response;
+      return data ? transformCurrency(data as any) : null;
     },
     enabled: !!code,
   });
@@ -253,9 +269,7 @@ export function useUpdateCurrencyStatus() {
 
   return useMutation({
     mutationFn: ({ code, status }: { code: string; status: CurrencyStatus }) =>
-      CurrenciesService.currenciesControllerUpdateStatus(code, { 
-        status: status as UpdateCurrencyStatusDto.status 
-      }),
+      updateCurrencyStatus(code, status as UpdateCurrencyStatusDto.status),
     onSuccess: (_, { code }) => {
       queryClient.invalidateQueries({ queryKey: currenciesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: currenciesKeys.detail(code) });
@@ -269,7 +283,7 @@ export function useCreateCurrency() {
 
   return useMutation({
     mutationFn: (data: CreateCurrencyDto) =>
-      CurrenciesService.currenciesControllerCreate(data),
+      createCurrency(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: currenciesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: currenciesKeys.stats() });
@@ -282,7 +296,7 @@ export function useDeleteCurrency() {
 
   return useMutation({
     mutationFn: (code: string) =>
-      CurrenciesService.currenciesControllerDelete(code),
+      deleteCurrency(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: currenciesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: currenciesKeys.stats() });
@@ -295,8 +309,9 @@ export function useCurrenciesStats() {
   return useQuery({
     queryKey: currenciesKeys.stats(),
     queryFn: async () => {
-      const response = await CurrenciesService.currenciesControllerGetStats();
-      return response.data ?? { total: 0, byStatus: { ACTIVE: 0, PENDING: 0, DEPRECATED: 0 } };
+      const response = await getCurrenciesStats();
+      const data = (response as any)?.data ?? response;
+      return data ?? { total: 0, byStatus: { ACTIVE: 0, PENDING: 0, DEPRECATED: 0 } };
     },
   });
 }
@@ -312,16 +327,16 @@ export function useSynonyms(filters?: Partial<SynonymsFilters>) {
   return useQuery({
     queryKey: synonymsKeys.list(effectiveFilters),
     queryFn: async () => {
-      const response = await CurrencySynonymsService.currencySynonymsControllerFindAll(
-        effectiveFilters.page,
-        effectiveFilters.limit,
-        effectiveFilters.search || undefined,
-        effectiveFilters.status === 'all' ? undefined : effectiveFilters.status
-      );
-      
+      const response = await listCurrencySynonyms({
+        page: effectiveFilters.page,
+        limit: effectiveFilters.limit,
+        search: effectiveFilters.search || undefined,
+        status: effectiveFilters.status === 'all' ? undefined : effectiveFilters.status,
+      });
+
       return {
-        data: (response.data ?? []).map(transformSynonym),
-        pagination: response.pagination as PaginationInfo | undefined,
+        data: ((response as any)?.data ?? []).map(transformSynonym),
+        pagination: (response as any)?.pagination as PaginationInfo | undefined,
       };
     },
     placeholderData: keepPreviousData,
@@ -338,15 +353,15 @@ export function useUnmappedSynonyms(filters?: { search?: string; page?: number; 
   return useQuery({
     queryKey: synonymsKeys.unmapped(effectiveFilters),
     queryFn: async () => {
-      const response = await CurrencySynonymsService.currencySynonymsControllerFindUnmapped(
-        filters?.page ?? 1,
-        filters?.limit ?? 20,
-        filters?.search || undefined
-      );
-      
+      const response = await listUnmappedCurrencySynonyms({
+        page: filters?.page ?? 1,
+        limit: filters?.limit ?? 20,
+        search: filters?.search || undefined,
+      });
+
       return {
-        data: (response.data ?? []).map(transformSynonym),
-        pagination: response.pagination as PaginationInfo | undefined,
+        data: ((response as any)?.data ?? []).map(transformSynonym),
+        pagination: (response as any)?.pagination as PaginationInfo | undefined,
       };
     },
   });
@@ -356,8 +371,9 @@ export function useSynonymsByCurrency(currencyCode: string | undefined) {
   return useQuery({
     queryKey: synonymsKeys.byCurrency(currencyCode!),
     queryFn: async () => {
-      const response = await CurrencySynonymsService.currencySynonymsControllerFindByCurrency(currencyCode!);
-      return (response.data ?? []).map(transformSynonym);
+      const response = await listCurrencySynonymsByCurrency(currencyCode!);
+      const data = (response as any)?.data ?? response ?? [];
+      return Array.isArray(data) ? data.map(transformSynonym) : [];
     },
     enabled: !!currencyCode,
   });
@@ -367,8 +383,9 @@ export function useSynonym(id: string | undefined) {
   return useQuery({
     queryKey: synonymsKeys.detail(id!),
     queryFn: async () => {
-      const response = await CurrencySynonymsService.currencySynonymsControllerFindOne(id!);
-      return response.data ? transformSynonym(response.data) : null;
+      const response = await getCurrencySynonym(id!);
+      const data = (response as any)?.data ?? response;
+      return data ? transformSynonym(data as any) : null;
     },
     enabled: !!id,
   });
@@ -379,7 +396,7 @@ export function useMapSynonym() {
 
   return useMutation({
     mutationFn: ({ id, currencyCode }: { id: string; currencyCode: string }) =>
-      CurrencySynonymsService.currencySynonymsControllerMapToCurrency(id, { currencyCode }),
+      mapSynonymToCurrency({ id, currencyCode }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: synonymsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: synonymsKeys.all });
@@ -395,7 +412,7 @@ export function useBulkMapSynonyms() {
 
   return useMutation({
     mutationFn: (mappings: BulkMapSynonymsDto['mappings']) =>
-      CurrencySynonymsService.currencySynonymsControllerBulkMap({ mappings }),
+      bulkMapSynonyms(mappings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: synonymsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: synonymsKeys.all });
@@ -410,8 +427,9 @@ export function useSynonymsStats() {
   return useQuery({
     queryKey: synonymsKeys.stats(),
     queryFn: async () => {
-      const response = await CurrencySynonymsService.currencySynonymsControllerGetStats();
-      return response.data ?? { total: 0, byStatus: { UNMAPPED: 0, MAPPED: 0 }, totalUnmappedOccurrences: 0 };
+      const response = await getCurrencySynonymsStats();
+      const data = (response as any)?.data ?? response;
+      return data ?? { total: 0, byStatus: { UNMAPPED: 0, MAPPED: 0 }, totalUnmappedOccurrences: 0 };
     },
   });
 }
