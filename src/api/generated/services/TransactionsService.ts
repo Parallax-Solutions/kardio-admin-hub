@@ -48,7 +48,6 @@ export class TransactionsService {
      * @param bankId Filter by bank ID
      * @param merchant Search by merchant name (partial match)
      * @param search Search keyword (searches merchant, client name)
-     * @param transactionType Filter by transaction type (comma-separated for multiple)
      * @param reconciliationStatus Filter by reconciliation status (comma-separated for multiple)
      * @param minAmount Minimum amount filter (in minor units)
      * @param maxAmount Maximum amount filter (in minor units)
@@ -66,7 +65,6 @@ export class TransactionsService {
         bankId?: string,
         merchant?: string,
         search?: string,
-        transactionType?: Array<string>,
         reconciliationStatus?: Array<string>,
         minAmount?: number,
         maxAmount?: number,
@@ -130,7 +128,6 @@ export class TransactionsService {
                 'bankId': bankId,
                 'merchant': merchant,
                 'search': search,
-                'transactionType': transactionType,
                 'reconciliationStatus': reconciliationStatus,
                 'minAmount': minAmount,
                 'maxAmount': maxAmount,

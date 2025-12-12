@@ -21,6 +21,7 @@ export type { CreateBankDto } from './models/CreateBankDto';
 export type { CreateCategoryDto } from './models/CreateCategoryDto';
 export { CreateCurrencyDto } from './models/CreateCurrencyDto';
 export { CreateParserConfigDto } from './models/CreateParserConfigDto';
+export type { CreatePrimaryClientDto } from './models/CreatePrimaryClientDto';
 export type { CreateTransactionDto } from './models/CreateTransactionDto';
 export type { ErrorDetailSchema } from './models/ErrorDetailSchema';
 export type { ListMetaSchema } from './models/ListMetaSchema';

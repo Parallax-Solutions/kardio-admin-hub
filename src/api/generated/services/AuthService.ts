@@ -5,6 +5,7 @@
 import type { AdminLoginDto } from '../models/AdminLoginDto';
 import type { AdminRegisterDto } from '../models/AdminRegisterDto';
 import type { ChangePasswordDto } from '../models/ChangePasswordDto';
+import type { CreatePrimaryClientDto } from '../models/CreatePrimaryClientDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -262,6 +263,26 @@ export class AuthService {
                                 302: `Redirects to mobile deep link with success status.
                                  **Deep link format**: \`kardio://oauth-callback?status=success&accessToken=...&refreshToken=...&userId=...&email=...\`
                                 The mobile app should intercept this deep link and extract the JWT tokens for authentication.`,
+                            },
+                        });
+                    }
+                    /**
+                     * Create primary client
+                     * Creates the primary client entity for the authenticated user during onboarding. This establishes the main identity for transaction association.
+                     * @param requestBody
+                     * @returns any Primary client created successfully
+                     * @throws ApiError
+                     */
+                    public static authControllerCreatePrimaryClient(
+                        requestBody: CreatePrimaryClientDto,
+                    ): CancelablePromise<any> {
+                        return __request(OpenAPI, {
+                            method: 'POST',
+                            url: '/api/auth/client/primary',
+                            body: requestBody,
+                            mediaType: 'application/json',
+                            errors: {
+                                409: `User already has a primary client`,
                             },
                         });
                     }
