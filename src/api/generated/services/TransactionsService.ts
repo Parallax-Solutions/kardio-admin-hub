@@ -28,7 +28,6 @@ export class TransactionsService {
      * - `bankId`: Filter by bank ID
      * - `merchant`: Search in merchant name (partial match)
      * - `search`: Full-text search (merchant, client name)
-     * - `transactionType`: Filter by type (comma-separated: PURCHASE,WITHDRAWAL)
      * - `reconciliationStatus`: Filter by status (comma-separated: RECONCILED,PENDING)
      * - `minAmount`: Minimum amount filter (in minor units)
      * - `maxAmount`: Maximum amount filter (in minor units)
@@ -73,12 +72,28 @@ export class TransactionsService {
         message?: string;
         data?: Array<{
             id?: string;
+            userId?: string;
+            connectionAccountId?: string | null;
+            bankId?: string | null;
+            parserConfigId?: string | null;
             date?: string;
             merchant?: string;
             amount?: number;
-            currencyCode?: string | null;
-            categoryId?: string;
+            currency?: string;
+            clientId?: string | null;
+            categoryId?: string | null;
+            categorySource?: string | null;
             sourceType?: string;
+            sourceId?: string | null;
+            reconciliationStatus?: string;
+            reconciliationSource?: string | null;
+            reconciledAt?: string | null;
+            authCode?: string | null;
+            reference?: string | null;
+            transactionType?: string | null;
+            cardLast4?: string | null;
+            createdAt?: string;
+            updatedAt?: string;
         }>;
         pagination?: {
             page?: number;
@@ -103,7 +118,6 @@ export class TransactionsService {
                 bankId?: string | null;
                 merchant?: string | null;
                 search?: string | null;
-                transactionType?: Array<string> | null;
                 reconciliationStatus?: Array<string> | null;
                 minAmount?: number | null;
                 maxAmount?: number | null;
@@ -148,12 +162,28 @@ export class TransactionsService {
         message?: string;
         data?: {
             id?: string;
+            userId?: string;
+            connectionAccountId?: string | null;
+            bankId?: string | null;
+            parserConfigId?: string | null;
             date?: string;
             merchant?: string;
             amount?: number;
-            currencyCode?: string | null;
-            categoryId?: string;
+            currency?: string;
+            clientId?: string | null;
+            categoryId?: string | null;
+            categorySource?: string | null;
             sourceType?: string;
+            sourceId?: string | null;
+            reconciliationStatus?: string;
+            reconciliationSource?: string | null;
+            reconciledAt?: string | null;
+            authCode?: string | null;
+            reference?: string | null;
+            transactionType?: string | null;
+            cardLast4?: string | null;
+            createdAt?: string;
+            updatedAt?: string;
         };
         pagination?: null | null;
         path?: string;
@@ -281,12 +311,28 @@ export class TransactionsService {
         message?: string;
         data?: {
             id?: string;
+            userId?: string;
+            connectionAccountId?: string | null;
+            bankId?: string | null;
+            parserConfigId?: string | null;
             date?: string;
             merchant?: string;
             amount?: number;
-            currencyCode?: string | null;
-            categoryId?: string;
+            currency?: string;
+            clientId?: string | null;
+            categoryId?: string | null;
+            categorySource?: string | null;
             sourceType?: string;
+            sourceId?: string | null;
+            reconciliationStatus?: string;
+            reconciliationSource?: string | null;
+            reconciledAt?: string | null;
+            authCode?: string | null;
+            reference?: string | null;
+            transactionType?: string | null;
+            cardLast4?: string | null;
+            createdAt?: string;
+            updatedAt?: string;
         };
         pagination?: null | null;
         path?: string;
@@ -351,12 +397,28 @@ export class TransactionsService {
         message?: string;
         data?: {
             id?: string;
+            userId?: string;
+            connectionAccountId?: string | null;
+            bankId?: string | null;
+            parserConfigId?: string | null;
             date?: string;
             merchant?: string;
             amount?: number;
-            currencyCode?: string | null;
-            categoryId?: string;
+            currency?: string;
+            clientId?: string | null;
+            categoryId?: string | null;
+            categorySource?: string | null;
             sourceType?: string;
+            sourceId?: string | null;
+            reconciliationStatus?: string;
+            reconciliationSource?: string | null;
+            reconciledAt?: string | null;
+            authCode?: string | null;
+            reference?: string | null;
+            transactionType?: string | null;
+            cardLast4?: string | null;
+            createdAt?: string;
+            updatedAt?: string;
         };
         pagination?: null | null;
         path?: string;

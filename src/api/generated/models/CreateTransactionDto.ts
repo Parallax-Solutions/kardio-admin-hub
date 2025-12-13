@@ -24,14 +24,6 @@ export type CreateTransactionDto = {
      */
     categoryId?: string;
     /**
-     * City where the transaction occurred
-     */
-    city?: string;
-    /**
-     * Country where the transaction occurred
-     */
-    country?: string;
-    /**
      * Authorization code from the bank
      */
     authCode?: string;
