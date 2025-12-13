@@ -1,64 +1,58 @@
 # Kardio Admin Hub
 
-**Organiza tus gastos automáticamente desde tu correo**
+**Automatically organize your expenses from your email**
 
-Panel administrativo y landing page para Kardio - la app de finanzas personales para Costa Rica 🇨🇷
+Admin panel and landing page for Kardio - the personal finance app for Costa Rica 🇨🇷
 
 ---
 
-## 📋 Descripción
+## 📋 Description
 
-**Kardio** es una aplicación de finanzas personales que lee los correos de notificación de tu banco y valida cada transacción con tus estados de cuenta. Todo categorizado automáticamente, sin ingresar datos manualmente.
+**Kardio** is a personal finance application that reads bank notification emails and validates each transaction with your account statements. Everything is automatically categorized, without manual data entry.
 
-Este repositorio contiene:
-- **Landing Page** - Página de marketing con información del producto
-- **Admin Hub** - Panel administrativo para gestionar bancos, usuarios, parser configs y monedas
+This repository contains:
+- **Landing Page** - Marketing page with product information
+- **Admin Hub** - Administrative panel to manage banks, users, parser configs, and currencies
 
-## ✨ Características Principales
+## ✨ Key Features
 
-- 📧 **Importación automática** - Conecta tu correo y detecta automáticamente los emails de notificación de tu banco
-- 🧠 **Categorización inteligente** - Clasifica gastos con ayuda de IA
-- 🏦 **Bancos de Costa Rica** - Compatible con BAC, BCR, Banco Nacional y más
-- 🔄 **Detección de suscripciones** - Identifica pagos recurrentes automáticamente
-- ✅ **Validación con estados de cuenta** - Cruza notificaciones con estados de cuenta
-
-## 🔒 Seguridad
-
-- **No pedimos clave del banco** - Nunca necesitamos credenciales bancarias
-- **Solo lectura de correos** - Acceso únicamente a correos de notificaciones bancarias
-- **Datos encriptados** - AES-256 en reposo, TLS 1.3 en tránsito
+- 📧 **Automatic import** - Connect your email and automatically detect bank notification emails
+- 🧠 **Smart categorization** - Classify expenses with AI assistance
+- 🏦 **Costa Rica banks** - Compatible with BAC, BCR, Banco Nacional, and more
+- 🔄 **Subscription detection** - Automatically identify recurring payments
+- ✅ **Statement validation** - Cross-reference notifications with account statements
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **React 18** + **TypeScript**
 - **Vite** - Build tool
-- **TailwindCSS** - Estilos
-- **shadcn/ui** + **Radix UI** - Componentes
-- **TanStack Query** - Data fetching y cache
+- **TailwindCSS** - Styling
+- **shadcn/ui** + **Radix UI** - Components
+- **TanStack Query** - Data fetching and cache
 - **Zustand** - State management
 - **React Router** - Routing
-- **React Hook Form** + **Zod** - Formularios y validación
-- **Recharts** - Gráficos
-- **Lucide React** - Iconos
+- **React Hook Form** + **Zod** - Forms and validation
+- **Recharts** - Charts
+- **Lucide React** - Icons
 
 ### Testing
 - **Vitest** - Test runner
-- **React Testing Library** - Testing de componentes
+- **React Testing Library** - Component testing
 
 ### Tooling
 - **ESLint** - Linting
-- **OpenAPI TypeScript Codegen** - Generación de cliente API
+- **OpenAPI TypeScript Codegen** - API client generation
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 src/
 ├── api/
-│   ├── generated/          # Cliente API generado desde OpenAPI
+│   ├── generated/          # API client generated from OpenAPI
 │   └── services/           # Thin service wrappers
 ├── components/
-│   ├── admin/              # Componentes del panel admin
+│   ├── admin/              # Admin panel components
 │   │   ├── banks/          # BankFormDialog, BanksTable, BankCard
 │   │   ├── currencies/     # CurrenciesTab, SynonymsTab, SummaryCard
 │   │   ├── parser-configs/ # Filters, Table, Card, Settings cards
@@ -96,87 +90,87 @@ src/
 └── test/                   # Test setup and utilities
 ```
 
-## 🚀 Comenzar
+## 🚀 Getting Started
 
-### Prerrequisitos
+### Prerequisites
 
 - Node.js 18+
-- npm o pnpm
+- npm or pnpm
 
-### Instalación
+### Installation
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/Parallax-Solutions/kardio-admin-hub.git
 cd kardio-admin-hub
 
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Iniciar servidor de desarrollo
+# Start development server
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:8080`
+The application will be available at `http://localhost:8080`
 
-### Scripts Disponibles
+### Available Scripts
 
 ```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Build de producción
-npm run build:dev    # Build de desarrollo
-npm run preview      # Preview del build
-npm run lint         # Ejecutar ESLint
-npm run test         # Ejecutar tests en modo watch
-npm run test:run     # Ejecutar tests una vez
-npm run test:coverage # Ejecutar tests con coverage
-npm run generate:api # Regenerar cliente API desde OpenAPI
+npm run dev          # Development server
+npm run build        # Production build
+npm run build:dev    # Development build
+npm run preview      # Preview build
+npm run lint         # Run ESLint
+npm run test         # Run tests in watch mode
+npm run test:run     # Run tests once
+npm run test:coverage # Run tests with coverage
+npm run generate:api # Regenerate API client from OpenAPI
 ```
 
-## 🔧 Configuración
+## 🔧 Configuration
 
-### Variables de Entorno
+### Environment Variables
 
-Crear un archivo `.env` en la raíz del proyecto:
+Create a `.env` file in the project root:
 
 ```env
 VITE_API_URL=http://localhost:3001
 ```
 
-### Generar Cliente API
+### Generate API Client
 
-El cliente API se genera automáticamente desde el schema OpenAPI del backend:
+The API client is automatically generated from the backend's OpenAPI schema:
 
 ```bash
-# Asegúrate de que el backend esté corriendo en localhost:3001
+# Make sure the backend is running on localhost:3001
 npm run generate:api
 ```
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar todos los tests
+# Run all tests
 npm run test:run
 
-# Ejecutar tests con coverage
+# Run tests with coverage
 npm run test:coverage
 
-# Ejecutar tests en modo watch
+# Run tests in watch mode
 npm run test
 ```
 
-### Cobertura de Tests
+### Test Coverage
 
 - `src/api/services/http.test.ts` - unwrapData helper
 - `src/stores/parserConfigsStore.test.ts` - transformConfig, data normalization
 - `src/hooks/useBankForm.test.ts` - Bank form state management
 - `src/hooks/useUserRoleChange.test.ts` - User role change dialog
 
-## 📐 Arquitectura
+## 📐 Architecture
 
-### Patrón de Páginas Admin
+### Admin Pages Pattern
 
-Todas las páginas admin siguen un patrón consistente:
+All admin pages follow a consistent pattern:
 
 ```tsx
 export default function AdminPage() {
@@ -196,29 +190,29 @@ export default function AdminPage() {
 }
 ```
 
-### Separación de Responsabilidades
+### Separation of Concerns
 
-- **Pages** - Composición de componentes, mínima lógica
-- **Hooks** - Lógica de negocio y estado
-- **Components** - UI presentacional
-- **Stores** - Estado global y data fetching
-- **Services** - Wrappers del cliente API
+- **Pages** - Component composition, minimal logic
+- **Hooks** - Business logic and state
+- **Components** - Presentational UI
+- **Stores** - Global state and data fetching
+- **Services** - API client wrappers
 
 ## 🎨 Design System
 
-El proyecto usa un design system basado en:
+The project uses a design system based on:
 
-- **TailwindCSS** con configuración personalizada
-- **shadcn/ui** como base de componentes
-- **CSS Variables** para theming (light/dark mode)
+- **TailwindCSS** with custom configuration
+- **shadcn/ui** as component base
+- **CSS Variables** for theming (light/dark mode)
 - **Responsive design** mobile-first
 
-### Colores Principales
+### Main Colors
 
-- `primary` - Verde teal (#0d9488)
+- `primary` - Teal green (#0d9488)
 - `accent` - Coral (#f97316)
-- `success`, `warning`, `destructive`, `info` - Estados
+- `success`, `warning`, `destructive`, `info` - Status colors
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto es privado y propietario de Parallax Solutions.
+This project is private and proprietary to Parallax Solutions.
