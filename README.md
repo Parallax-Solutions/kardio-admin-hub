@@ -1,73 +1,224 @@
-# Welcome to your Lovable project
+# Kardio Admin Hub
 
-## Project info
+**Organiza tus gastos automáticamente desde tu correo**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Panel administrativo y landing page para Kardio - la app de finanzas personales para Costa Rica 🇨🇷
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 📋 Descripción
 
-**Use Lovable**
+**Kardio** es una aplicación de finanzas personales que lee los correos de notificación de tu banco y valida cada transacción con tus estados de cuenta. Todo categorizado automáticamente, sin ingresar datos manualmente.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Este repositorio contiene:
+- **Landing Page** - Página de marketing con información del producto
+- **Admin Hub** - Panel administrativo para gestionar bancos, usuarios, parser configs y monedas
 
-Changes made via Lovable will be committed automatically to this repo.
+## ✨ Características Principales
 
-**Use your preferred IDE**
+- 📧 **Importación automática** - Conecta tu correo y detecta automáticamente los emails de notificación de tu banco
+- 🧠 **Categorización inteligente** - Clasifica gastos con ayuda de IA
+- 🏦 **Bancos de Costa Rica** - Compatible con BAC, BCR, Banco Nacional y más
+- 🔄 **Detección de suscripciones** - Identifica pagos recurrentes automáticamente
+- ✅ **Validación con estados de cuenta** - Cruza notificaciones con estados de cuenta
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🔒 Seguridad
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **No pedimos clave del banco** - Nunca necesitamos credenciales bancarias
+- **Solo lectura de correos** - Acceso únicamente a correos de notificaciones bancarias
+- **Datos encriptados** - AES-256 en reposo, TLS 1.3 en tránsito
 
-Follow these steps:
+## 🛠️ Tech Stack
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Frontend
+- **React 18** + **TypeScript**
+- **Vite** - Build tool
+- **TailwindCSS** - Estilos
+- **shadcn/ui** + **Radix UI** - Componentes
+- **TanStack Query** - Data fetching y cache
+- **Zustand** - State management
+- **React Router** - Routing
+- **React Hook Form** + **Zod** - Formularios y validación
+- **Recharts** - Gráficos
+- **Lucide React** - Iconos
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Testing
+- **Vitest** - Test runner
+- **React Testing Library** - Testing de componentes
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Tooling
+- **ESLint** - Linting
+- **OpenAPI TypeScript Codegen** - Generación de cliente API
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── api/
+│   ├── generated/          # Cliente API generado desde OpenAPI
+│   └── services/           # Thin service wrappers
+├── components/
+│   ├── admin/              # Componentes del panel admin
+│   │   ├── banks/          # BankFormDialog, BanksTable, BankCard
+│   │   ├── currencies/     # CurrenciesTab, SynonymsTab, SummaryCard
+│   │   ├── parser-configs/ # Filters, Table, Card, Settings cards
+│   │   └── users/          # UsersTable, UserCard, RoleChangeDialog
+│   ├── auth/               # LoginForm
+│   ├── landing/            # Navbar, Hero, Features, Security, etc.
+│   ├── shared/             # AppLogo, BackgroundDecoration
+│   └── ui/                 # shadcn/ui components
+├── contexts/               # AuthContext
+├── domain/                 # Domain types (Bank, User, ParserConfig, Currency)
+├── hooks/                  # Custom hooks
+│   ├── useBankForm.ts
+│   ├── useBanksList.ts
+│   ├── useUserRoleChange.ts
+│   ├── useUsersList.ts
+│   ├── useParserConfigEditor.ts
+│   ├── useParserConfigsList.ts
+│   └── useDashboardStats.ts
+├── layouts/                # AdminLayout
+├── pages/
+│   ├── Index.tsx           # Landing page
+│   ├── Login.tsx           # Login page
+│   └── admin/              # Admin pages
+│       ├── Dashboard.tsx
+│       ├── Banks.tsx
+│       ├── Users.tsx
+│       ├── ParserConfigs.tsx
+│       ├── ParserConfigEditor.tsx
+│       └── Currencies.tsx
+├── stores/                 # Zustand stores + TanStack Query hooks
+│   ├── banksStore.ts
+│   ├── usersStore.ts
+│   ├── parserConfigsStore.ts
+│   └── currenciesStore.ts
+└── test/                   # Test setup and utilities
+```
+
+## 🚀 Comenzar
+
+### Prerrequisitos
+
+- Node.js 18+
+- npm o pnpm
+
+### Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/Parallax-Solutions/kardio-admin-hub.git
+cd kardio-admin-hub
+
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+La aplicación estará disponible en `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Scripts Disponibles
 
-**Use GitHub Codespaces**
+```bash
+npm run dev          # Servidor de desarrollo
+npm run build        # Build de producción
+npm run build:dev    # Build de desarrollo
+npm run preview      # Preview del build
+npm run lint         # Ejecutar ESLint
+npm run test         # Ejecutar tests en modo watch
+npm run test:run     # Ejecutar tests una vez
+npm run test:coverage # Ejecutar tests con coverage
+npm run generate:api # Regenerar cliente API desde OpenAPI
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔧 Configuración
 
-## What technologies are used for this project?
+### Variables de Entorno
 
-This project is built with:
+Crear un archivo `.env` en la raíz del proyecto:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```env
+VITE_API_URL=http://localhost:3001
+```
 
-## How can I deploy this project?
+### Generar Cliente API
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+El cliente API se genera automáticamente desde el schema OpenAPI del backend:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+# Asegúrate de que el backend esté corriendo en localhost:3001
+npm run generate:api
+```
 
-Yes, you can!
+## 🧪 Testing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+# Ejecutar todos los tests
+npm run test:run
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Ejecutar tests con coverage
+npm run test:coverage
+
+# Ejecutar tests en modo watch
+npm run test
+```
+
+### Cobertura de Tests
+
+- `src/api/services/http.test.ts` - unwrapData helper
+- `src/stores/parserConfigsStore.test.ts` - transformConfig, data normalization
+- `src/hooks/useBankForm.test.ts` - Bank form state management
+- `src/hooks/useUserRoleChange.test.ts` - User role change dialog
+
+## 📐 Arquitectura
+
+### Patrón de Páginas Admin
+
+Todas las páginas admin siguen un patrón consistente:
+
+```tsx
+export default function AdminPage() {
+  const { data, isLoading, error, ...actions } = usePageHook();
+
+  if (error) return <ErrorState />;
+
+  return (
+    <div>
+      <PageHeader />
+      <FiltersComponent />
+      <TableComponent />      {/* Desktop */}
+      <CardsComponent />      {/* Mobile */}
+      <DialogComponent />
+    </div>
+  );
+}
+```
+
+### Separación de Responsabilidades
+
+- **Pages** - Composición de componentes, mínima lógica
+- **Hooks** - Lógica de negocio y estado
+- **Components** - UI presentacional
+- **Stores** - Estado global y data fetching
+- **Services** - Wrappers del cliente API
+
+## 🎨 Design System
+
+El proyecto usa un design system basado en:
+
+- **TailwindCSS** con configuración personalizada
+- **shadcn/ui** como base de componentes
+- **CSS Variables** para theming (light/dark mode)
+- **Responsive design** mobile-first
+
+### Colores Principales
+
+- `primary` - Verde teal (#0d9488)
+- `accent` - Coral (#f97316)
+- `success`, `warning`, `destructive`, `info` - Estados
+
+## 📄 Licencia
+
+Este proyecto es privado y propietario de Parallax Solutions.

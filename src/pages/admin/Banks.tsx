@@ -1,27 +1,16 @@
-import { Plus, Search, Loader2 } from 'lucide-react';
-import { 
-  useBanks, 
-  useToggleBankActive,
-  useSetBanksFilters,
-} from '@/stores';
+import { Plus } from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-
-import { useBankForm } from '@/hooks/useBankForm';
-import { BankFormDialog, BanksTable, BankCard } from '@/components/admin/banks';
+import { useBanksList } from '@/hooks/useBanksList';
+import { BankFormDialog, BanksTable, BankCard, BanksSearchBar } from '@/components/admin/banks';
 
 export default function AdminBanks() {
-  const banksQuery = useBanks();
-  const setFilters = useSetBanksFilters();
-  const toggleActive = useToggleBankActive();
-  
-  const banks = banksQuery.data ?? [];
-  const isLoading = banksQuery.isLoading;
-  const error = banksQuery.error;
-
   const {
+    banks,
+    isLoading,
+    error,
+    handleToggleActive,
+    handleSearchChange,
     isDialogOpen,
     editingBank,
     formData,
@@ -31,16 +20,7 @@ export default function AdminBanks() {
     closeDialog,
     handleSubmit,
     updateFormField,
-  } = useBankForm();
-
-  const handleToggleActive = async (id: string) => {
-    try {
-      await toggleActive.mutateAsync(id);
-      toast.success('Estado actualizado');
-    } catch {
-      toast.error('Error al cambiar estado');
-    }
-  };
+  } = useBanksList();
 
   if (error) {
     return <div className="text-destructive">Error: {error.message}</div>;
@@ -56,28 +36,14 @@ export default function AdminBanks() {
         </Button>
       </PageHeader>
 
-      {/* Search */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            defaultValue=""
-            onChange={(e) => setFilters({ search: e.target.value })}
-            className="pl-9 h-9 text-sm sm:h-10"
-          />
-        </div>
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-      </div>
+      <BanksSearchBar isLoading={isLoading} onSearchChange={handleSearchChange} />
 
-      {/* Desktop Table */}
       <BanksTable
         banks={banks}
         onEdit={openEditDialog}
         onToggleActive={handleToggleActive}
       />
 
-      {/* Mobile Cards */}
       <div className="grid gap-3 md:hidden">
         {banks.map((bank) => (
           <BankCard
@@ -89,7 +55,6 @@ export default function AdminBanks() {
         ))}
       </div>
 
-      {/* Create/Edit Dialog */}
       <BankFormDialog
         isOpen={isDialogOpen}
         onOpenChange={(open) => !open && closeDialog()}

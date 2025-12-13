@@ -1,14 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Mail, Play, Shield, Lock, Eye } from 'lucide-react';
+import { BackgroundDecoration } from '@/components/shared';
 
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-background pt-8 pb-16 lg:pt-16 lg:pb-24">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-accent/5 blur-3xl" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
