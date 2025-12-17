@@ -51,7 +51,7 @@ export class AuthService {
             user?: {
                 id?: string;
                 email?: string;
-                name?: string;
+                image?: string;
             };
         };
     }> {
@@ -84,7 +84,7 @@ export class AuthService {
     }
     /**
      * Get current user profile
-     * Returns the authenticated user's profile information. Requires valid JWT token.
+     * Returns the authenticated user's profile information including their primary client. Requires valid JWT token.
      * @returns any User profile retrieved successfully
      * @throws ApiError
      */
@@ -93,8 +93,30 @@ export class AuthService {
         data?: {
             id?: string;
             email?: string;
-            name?: string;
             image?: string;
+            /**
+             * Indicates if the user has completed onboarding registration
+             */
+            hasCompletedRegistration?: boolean;
+            /**
+             * Primary client information. Null if user has not completed registration.
+             */
+            client?: {
+                id?: string;
+                /**
+                 * Short display name (given1)
+                 */
+                displayName?: string;
+                /**
+                 * Full display name (given1 + surname1)
+                 */
+                fullDisplayName?: string;
+                given1?: string;
+                given2?: string | null;
+                surname1?: string;
+                surname2?: string;
+                isPrimary?: boolean;
+            } | null;
         };
     }> {
         return __request(OpenAPI, {

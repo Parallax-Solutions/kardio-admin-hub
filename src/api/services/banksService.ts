@@ -4,7 +4,7 @@ import type { UpdateBankDto } from '@/api/generated/models/UpdateBankDto';
 import { unwrapData } from './http';
 
 export async function listBanks(params: {
-  sortBy?: 'name' | 'country' | 'createdAt';
+  sortBy?: 'name' | 'countryCode' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
   country?: string;
   active?: boolean;

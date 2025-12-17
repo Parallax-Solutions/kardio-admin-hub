@@ -30,16 +30,16 @@ export class BanksService {
      * @param sortBy Field to sort by
      * @param sortOrder Sort order
      * @param active Filter by active status
-     * @param country Filter by country code (ISO 3166-1 alpha-2)
+     * @param countryCode Filter by country code (ISO 3166-1 alpha-2)
      * @param search Search by bank name (partial match)
      * @returns any List of banks
      * @throws ApiError
      */
     public static banksControllerFindAll(
-        sortBy?: 'name' | 'country' | 'createdAt',
+        sortBy?: 'name' | 'countryCode' | 'createdAt',
         sortOrder: 'asc' | 'desc' = 'asc',
         active?: boolean,
-        country?: string,
+        countryCode?: string,
         search?: string,
     ): CancelablePromise<{
         statusCode?: number;
@@ -75,7 +75,7 @@ export class BanksService {
                 'sortBy': sortBy,
                 'sortOrder': sortOrder,
                 'active': active,
-                'country': country,
+                'countryCode': countryCode,
                 'search': search,
             },
         });
@@ -117,14 +117,14 @@ export class BanksService {
         });
     }
     /**
-     * Get banks by country
-     * Returns all banks for a specific country. Response wrapped in `ApiSuccessResponse` envelope.
-     * @param country
-     * @returns any List of banks for the country
+     * Get banks by country code
+     * Returns all banks for a specific country code (ISO-2). Response wrapped in `ApiSuccessResponse` envelope.
+     * @param countryCode
+     * @returns any List of banks for the country code
      * @throws ApiError
      */
-    public static banksControllerFindByCountry(
-        country: string,
+    public static banksControllerFindByCountryCode(
+        countryCode: string,
     ): CancelablePromise<{
         statusCode?: number;
         message?: string;
@@ -144,9 +144,9 @@ export class BanksService {
     }> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/banks/country/{country}',
+            url: '/api/banks/country/{countryCode}',
             path: {
-                'country': country,
+                'countryCode': countryCode,
             },
         });
     }

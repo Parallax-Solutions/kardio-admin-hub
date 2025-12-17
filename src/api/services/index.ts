@@ -6,3 +6,6 @@ export * from './usersService';
 export * from './currenciesService';
 export * from './currencySynonymsService';
 export * from './dashboardService';
+export * from './categoriesService';
+export * from './transactionsService';
+export * from './connectionAccountsService';

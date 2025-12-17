@@ -1,9 +1,10 @@
 import { toast } from 'sonner';
-import { useBanks, useToggleBankActive, useSetBanksFilters } from '@/stores';
+import { useBanks, useToggleBankActive, useSetBanksFilters, useBanksFilters } from '@/stores';
 import { useBankForm } from './useBankForm';
 
 export function useBanksList() {
-  const banksQuery = useBanks();
+  const filters = useBanksFilters();
+  const banksQuery = useBanks(filters);
   const setFilters = useSetBanksFilters();
   const toggleActive = useToggleBankActive();
 

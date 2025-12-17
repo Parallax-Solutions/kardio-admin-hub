@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateTransactionDto } from '../models/CreateTransactionDto';
-import type { UpdateTransactionDto } from '../models/UpdateTransactionDto';
+import type { UpdateTransactionCategoryDto } from '../models/UpdateTransactionCategoryDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -26,9 +26,10 @@ export class TransactionsService {
      * - `endDate`: Filter transactions before this date (ISO-8601)
      * - `categoryId`: Filter by category ID
      * - `bankId`: Filter by bank ID
+     * - `currency`: Filter by currency code (e.g., USD, CRC)
+     * - `connectionAccountId`: Filter by connection account ID
      * - `merchant`: Search in merchant name (partial match)
      * - `search`: Full-text search (merchant, client name)
-     * - `reconciliationStatus`: Filter by status (comma-separated: RECONCILED,PENDING)
      * - `minAmount`: Minimum amount filter (in minor units)
      * - `maxAmount`: Maximum amount filter (in minor units)
      *
@@ -45,9 +46,10 @@ export class TransactionsService {
      * @param endDate Filter transactions before this date (inclusive)
      * @param categoryId Filter by category ID
      * @param bankId Filter by bank ID
+     * @param currency Filter by currency code
+     * @param connectionAccountId Filter by connection account ID
      * @param merchant Search by merchant name (partial match)
      * @param search Search keyword (searches merchant, client name)
-     * @param reconciliationStatus Filter by reconciliation status (comma-separated for multiple)
      * @param minAmount Minimum amount filter (in minor units)
      * @param maxAmount Maximum amount filter (in minor units)
      * @returns any Paginated list of transactions
@@ -62,9 +64,10 @@ export class TransactionsService {
         endDate?: string,
         categoryId?: string,
         bankId?: string,
+        currency?: string,
+        connectionAccountId?: string,
         merchant?: string,
         search?: string,
-        reconciliationStatus?: Array<string>,
         minAmount?: number,
         maxAmount?: number,
     ): CancelablePromise<{
@@ -77,12 +80,13 @@ export class TransactionsService {
             bankId?: string | null;
             parserConfigId?: string | null;
             date?: string;
-            merchant?: string;
+            merchantSnapshotName?: string;
             amount?: number;
             currency?: string;
             clientId?: string | null;
             categoryId?: string | null;
-            categorySource?: string | null;
+            categoryAssignmentSource?: 'NONE' | 'MERCHANT_GLOBAL_AI' | 'MERCHANT_GLOBAL_USER' | 'MERCHANT_USER_MANUAL' | 'TRANSACTION_USER_MANUAL' | null;
+            categoryStatus?: 'NEEDED' | 'PENDING' | 'COMPLETED' | 'FAILED' | null;
             sourceType?: string;
             sourceId?: string | null;
             reconciliationStatus?: string;
@@ -116,9 +120,10 @@ export class TransactionsService {
                 endDate?: string | null;
                 categoryId?: string | null;
                 bankId?: string | null;
+                currency?: string | null;
+                connectionAccountId?: string | null;
                 merchant?: string | null;
                 search?: string | null;
-                reconciliationStatus?: Array<string> | null;
                 minAmount?: number | null;
                 maxAmount?: number | null;
             };
@@ -140,9 +145,10 @@ export class TransactionsService {
                 'endDate': endDate,
                 'categoryId': categoryId,
                 'bankId': bankId,
+                'currency': currency,
+                'connectionAccountId': connectionAccountId,
                 'merchant': merchant,
                 'search': search,
-                'reconciliationStatus': reconciliationStatus,
                 'minAmount': minAmount,
                 'maxAmount': maxAmount,
             },
@@ -167,12 +173,13 @@ export class TransactionsService {
             bankId?: string | null;
             parserConfigId?: string | null;
             date?: string;
-            merchant?: string;
+            merchantSnapshotName?: string;
             amount?: number;
             currency?: string;
             clientId?: string | null;
             categoryId?: string | null;
-            categorySource?: string | null;
+            categoryAssignmentSource?: 'NONE' | 'MERCHANT_GLOBAL_AI' | 'MERCHANT_GLOBAL_USER' | 'MERCHANT_USER_MANUAL' | 'TRANSACTION_USER_MANUAL' | null;
+            categoryStatus?: 'NEEDED' | 'PENDING' | 'COMPLETED' | 'FAILED' | null;
             sourceType?: string;
             sourceId?: string | null;
             reconciliationStatus?: string;
@@ -316,12 +323,13 @@ export class TransactionsService {
             bankId?: string | null;
             parserConfigId?: string | null;
             date?: string;
-            merchant?: string;
+            merchantSnapshotName?: string;
             amount?: number;
             currency?: string;
             clientId?: string | null;
             categoryId?: string | null;
-            categorySource?: string | null;
+            categoryAssignmentSource?: 'NONE' | 'MERCHANT_GLOBAL_AI' | 'MERCHANT_GLOBAL_USER' | 'MERCHANT_USER_MANUAL' | 'TRANSACTION_USER_MANUAL' | null;
+            categoryStatus?: 'NEEDED' | 'PENDING' | 'COMPLETED' | 'FAILED' | null;
             sourceType?: string;
             sourceId?: string | null;
             reconciliationStatus?: string;
@@ -382,8 +390,34 @@ export class TransactionsService {
         });
     }
     /**
-     * Update transaction category
-     * Updates the category of a transaction. Use this to manually categorize or re-categorize a transaction. Response wrapped in `ApiSuccessResponse` envelope.
+     * Update transaction category (ADR-0014)
+     *
+     * Updates the category of a transaction with support for merchant-wide rules.
+     *
+     * **Request Body**:
+     * - `categoryId` (required): The category ID to assign
+     * - `applyToAllMerchantTransactions` (optional, default: false): If true, applies the category to all transactions from the same merchant for this user
+     *
+     * **Behavior**:
+     * 1. **Single transaction** (`applyToAllMerchantTransactions: false`):
+     * - Updates only this transaction
+     * - Sets `categoryAssignmentSource` to `TRANSACTION_USER_MANUAL`
+     * - No merchant rule is created
+     *
+     * 2. **All merchant transactions** (`applyToAllMerchantTransactions: true`):
+     * - Creates or updates a user-specific merchant category rule
+     * - Updates all transactions from this merchant for the user
+     * - Sets `categoryAssignmentSource` to `MERCHANT_USER_MANUAL`
+     * - If the selected category matches the global rule, no user rule is created (uses global)
+     *
+     * **Response**:
+     * - `transactionId`: The transaction ID
+     * - `categoryId`: The assigned category ID
+     * - `source`: How the category was assigned (TRANSACTION_USER_MANUAL, MERCHANT_USER_MANUAL, etc.)
+     * - `appliedToMerchant`: Whether the change was applied to all merchant transactions
+     * - `transactionsUpdated`: Number of transactions updated
+     * - `ruleCreated`: Whether a new merchant rule was created
+     *
      * @param id
      * @param requestBody
      * @returns any Category updated successfully
@@ -391,34 +425,17 @@ export class TransactionsService {
      */
     public static transactionsControllerUpdateCategory(
         id: string,
-        requestBody: UpdateTransactionDto,
+        requestBody: UpdateTransactionCategoryDto,
     ): CancelablePromise<{
         statusCode?: number;
         message?: string;
         data?: {
-            id?: string;
-            userId?: string;
-            connectionAccountId?: string | null;
-            bankId?: string | null;
-            parserConfigId?: string | null;
-            date?: string;
-            merchant?: string;
-            amount?: number;
-            currency?: string;
-            clientId?: string | null;
-            categoryId?: string | null;
-            categorySource?: string | null;
-            sourceType?: string;
-            sourceId?: string | null;
-            reconciliationStatus?: string;
-            reconciliationSource?: string | null;
-            reconciledAt?: string | null;
-            authCode?: string | null;
-            reference?: string | null;
-            transactionType?: string | null;
-            cardLast4?: string | null;
-            createdAt?: string;
-            updatedAt?: string;
+            transactionId?: string;
+            categoryId?: string;
+            source?: 'TRANSACTION_USER_MANUAL' | 'MERCHANT_USER_MANUAL' | 'MERCHANT_GLOBAL_AI' | 'MERCHANT_GLOBAL_USER';
+            appliedToMerchant?: boolean;
+            transactionsUpdated?: number;
+            ruleCreated?: boolean;
         };
         pagination?: null | null;
         path?: string;

@@ -9,9 +9,9 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class CategoriesService {
     /**
-     * Get all categories for current user
+     * Get all categories
      *
-     * Returns all expense categories for the authenticated user. Includes both system default and user-created categories.
+     * Returns all expense categories. Categories are global and shared across all users. Includes both system default and custom categories.
      *
      * **Sorting**:
      * - `sortBy`: Field to sort by (name, createdAt) - default: name
@@ -76,7 +76,7 @@ export class CategoriesService {
     }
     /**
      * Create new category
-     * Creates a custom expense category for the user.
+     * Creates a custom expense category. Categories are global and will be available to all users.
      * @param requestBody
      * @returns any Category created successfully
      * @throws ApiError

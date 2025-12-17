@@ -18,7 +18,7 @@ export interface BanksFilters {
   search: string;
   country: string | null;
   active: boolean | null;
-  sortBy: 'name' | 'country' | 'createdAt';
+  sortBy: 'name' | 'countryCode' | 'createdAt';
   sortOrder: 'asc' | 'desc';
 }
 
@@ -85,11 +85,19 @@ export const banksKeys = {
 };
 
 // TanStack Query Hooks
-export function useBanks() {
+export function useBanks(filters?: Partial<BanksFilters>) {
+  const activeFilters = { ...initialFilters, ...filters };
+
   return useQuery({
-    queryKey: ['banks', 'list'],
+    queryKey: banksKeys.list(activeFilters),
     queryFn: async () => {
-      const response = await listBanks({ sortBy: 'name', sortOrder: 'asc' });
+      const response = await listBanks({
+        sortBy: activeFilters.sortBy,
+        sortOrder: activeFilters.sortOrder,
+        active: activeFilters.active ?? undefined,
+        country: activeFilters.country ?? undefined,
+        search: activeFilters.search || undefined,
+      });
       const data = (response as { data?: unknown[] })?.data ?? response ?? [];
       return Array.isArray(data) ? data.map((b) => transformBank(b as any)) : [];
     },

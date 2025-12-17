@@ -9,34 +9,65 @@ export class DashboardService {
     /**
      * Get dashboard statistics
      *
-     * Returns aggregated spending statistics for the authenticated user.
+     * Returns aggregated spending statistics for the authenticated user, grouped by currency.
      *
-     * **Includes**:
-     * - Total spending (current month)
-     * - Transaction count
-     * - Spending by category breakdown
-     * - Monthly spending trends
-     * - Top merchants
+     * **Optional Filters** (query params):
+     * - `currency` - Filter transactions by currency code (e.g., USD, CRC). If not provided, returns stats for all currencies.
+     * - `bankId` - Filter transactions by bank ID
+     * - `connectionAccountId` - Filter transactions by connection account ID
+     * - `categoryId` - Filter transactions by category ID
+     * - `startDate` - Filter transactions from this date (ISO 8601, e.g., 2024-01-01)
+     * - `endDate` - Filter transactions until this date (ISO 8601, e.g., 2024-12-31)
      *
-     * @returns any Dashboard statistics
+     * **Response**: Array of stats objects, one per currency. Each object contains:
+     * - `totalTransactions` - Count of transactions for this currency
+     * - `categories` - List of categories used in transactions for this currency (id, name, color, icon)
+     * - `totalSpent` - Sum of transaction amounts for this currency
+     * - `currency` - Currency code (e.g., USD, CRC)
+     * - `uncategorizedCount` - Count of transactions without category for this currency
+     *
+     * @param currency Filter by currency code
+     * @param bankId Filter by bank ID
+     * @param connectionAccountId Filter by connection account ID
+     * @param categoryId Filter by category ID
+     * @param startDate Filter transactions from this date (ISO 8601)
+     * @param endDate Filter transactions until this date (ISO 8601)
+     * @returns any Dashboard statistics grouped by currency
      * @throws ApiError
      */
-    public static dashboardControllerGetStats(): CancelablePromise<{
+    public static dashboardControllerGetStats(
+        currency?: string,
+        bankId?: string,
+        connectionAccountId?: string,
+        categoryId?: string,
+        startDate?: string,
+        endDate?: string,
+    ): CancelablePromise<{
         success?: boolean;
-        data?: {
-            totalSpending?: number;
-            transactionCount?: number;
-            spendingByCategory?: Array<{
-                categoryId?: string;
-                categoryName?: string;
-                total?: number;
-                percentage?: number;
+        data?: Array<{
+            totalTransactions?: number;
+            categories?: Array<{
+                id?: string;
+                name?: string;
+                color?: string;
+                icon?: string;
             }>;
-        };
+            totalSpent?: number;
+            currency?: string;
+            uncategorizedCount?: number;
+        }>;
     }> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/dashboard/stats',
+            query: {
+                'currency': currency,
+                'bankId': bankId,
+                'connectionAccountId': connectionAccountId,
+                'categoryId': categoryId,
+                'startDate': startDate,
+                'endDate': endDate,
+            },
         });
     }
 }

@@ -40,7 +40,7 @@ export type { UpdateBankDto } from './models/UpdateBankDto';
 export type { UpdateCategoryDto } from './models/UpdateCategoryDto';
 export { UpdateCurrencyStatusDto } from './models/UpdateCurrencyStatusDto';
 export { UpdateParserConfigDto } from './models/UpdateParserConfigDto';
-export type { UpdateTransactionDto } from './models/UpdateTransactionDto';
+export type { UpdateTransactionCategoryDto } from './models/UpdateTransactionCategoryDto';
 export { UpdateUserRoleDto } from './models/UpdateUserRoleDto';
 
 export { AuthService } from './services/AuthService';

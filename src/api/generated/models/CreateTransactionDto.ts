@@ -8,9 +8,9 @@ export type CreateTransactionDto = {
      */
     date: string;
     /**
-     * Name of the merchant
+     * Name of the merchant (original string from source)
      */
-    merchant: string;
+    merchantSnapshotName: string;
     /**
      * Transaction amount in minor units (e.g., cents)
      */

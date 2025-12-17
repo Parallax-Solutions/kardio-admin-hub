@@ -12,9 +12,9 @@ export type CreateBankDto = {
      */
     slug: string;
     /**
-     * Country where the bank operates
+     * ISO-2 country code where the bank operates
      */
-    country: string;
+    countryCode: string;
     /**
      * URL to the bank logo image
      */
