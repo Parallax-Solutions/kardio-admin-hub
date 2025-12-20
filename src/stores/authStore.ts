@@ -163,13 +163,14 @@ export const useAuthStore = create<AuthStore>()(
           const response = await apiGetCurrentUser();
           
           if (response.success && response.data) {
+            const userData = response.data as { id?: string; email?: string; name?: string; image?: string };
             set({
               user: {
-                id: response.data.id!,
-                email: response.data.email!,
-                name: response.data.name!,
+                id: userData.id!,
+                email: userData.email!,
+                name: userData.name || userData.email!,
                 role: 'ADMIN',
-                image: response.data.image,
+                image: userData.image,
               },
               isLoading: false,
             });

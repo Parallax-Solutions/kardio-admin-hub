@@ -79,9 +79,9 @@ export function MapSynonymSheet({
       const result = await mapSynonymMutation.mutateAsync({
         id: synonym.id,
         currencyCode: selectedCurrency,
-      });
+      }) as { data?: { transactionsUpdated?: number } };
       
-      const transactionsUpdated = result.data?.transactionsUpdated ?? 0;
+      const transactionsUpdated = result?.data?.transactionsUpdated ?? 0;
       toast.success(
         `Synonym mapped to ${selectedCurrency} successfully. ${transactionsUpdated} transactions updated.`
       );

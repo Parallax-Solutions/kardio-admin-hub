@@ -73,10 +73,10 @@ export function BulkMapDialog({
         currencyCode: selectedCurrency,
       }));
 
-      const result = await bulkMapMutation.mutateAsync(mappings);
+      const result = await bulkMapMutation.mutateAsync(mappings) as { data?: { successful?: number; failed?: number } };
       
-      const successful = result.data?.successful ?? 0;
-      const failed = result.data?.failed ?? 0;
+      const successful = result?.data?.successful ?? 0;
+      const failed = result?.data?.failed ?? 0;
       
       if (failed === 0) {
         toast.success(`Successfully mapped ${successful} synonyms to ${selectedCurrency}`);
