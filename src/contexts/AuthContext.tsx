@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { OpenAPI } from '@/api/generated/core/OpenAPI';
 import { environment } from '@/config/environment';
@@ -26,6 +26,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [isInitializing, setIsInitializing] = useState(true);
+  
   const {
     user,
     isAuthenticated,
@@ -37,6 +39,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchCurrentUser,
     clearError,
   } = useAuthStore();
+
+  // Verificar token al iniciar la app
+  useEffect(() => {
+    const initAuth = async () => {
+      if (accessToken) {
+        OpenAPI.TOKEN = accessToken;
+        OpenAPI.BASE = environment.apiBaseUrl;
+        
+        try {
+          // Intentar obtener el usuario actual para validar el token
+          await fetchCurrentUser();
+        } catch {
+          // Si falla, el token expiró - logout limpia el estado
+          console.log('Token expired or invalid, logging out');
+        }
+      }
+      setIsInitializing(false);
+    };
+
+    initAuth();
+  }, []); // Solo al montar
 
   useEffect(() => {
     if (accessToken) {
@@ -65,13 +88,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await storeLogout();
   };
 
+  // Mostrar loading mientras se inicializa o durante operaciones
+  const effectiveIsLoading = isInitializing || isLoading;
+
   return (
     <AuthContext.Provider
       value={{
         currentUser,
         isAdmin,
         isAuthenticated,
-        isLoading,
+        isLoading: effectiveIsLoading,
         error,
         login,
         logout,
