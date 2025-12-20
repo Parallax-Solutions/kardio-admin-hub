@@ -135,9 +135,7 @@ export const useAuthStore = create<AuthStore>()(
           const response = await apiRefresh();
           
           if (response.success) {
-            // El backend maneja los tokens via cookies, 
-            // pero si devuelve nuevos tokens, los actualizamos
-            await get().fetchCurrentUser();
+            // Refresh exitoso - el token sigue válido
             return true;
           }
           
@@ -162,7 +160,10 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await apiGetCurrentUser();
           
-          if (response.success && response.data) {
+          // API puede devolver { success, data } o { statusCode, data }
+          const isSuccess = response.success || (response as { statusCode?: number }).statusCode === 200;
+          
+          if (isSuccess && response.data) {
             const userData = response.data as { id?: string; email?: string; name?: string; image?: string };
             set({
               user: {
@@ -174,14 +175,21 @@ export const useAuthStore = create<AuthStore>()(
               },
               isLoading: false,
             });
+          } else {
+            // Respuesta sin datos válidos
+            throw new Error('Invalid response from getCurrentUser');
           }
         } catch (error: unknown) {
-          // Si el token expiró, intentar refresh
-          const refreshed = await get().refreshSession();
-          
-          if (!refreshed) {
-            set({ isLoading: false });
-          }
+          console.error('fetchCurrentUser error:', error);
+          // Token inválido - limpiar estado
+          configureOpenAPI(null);
+          set({ 
+            isLoading: false,
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+          });
         }
       },
 

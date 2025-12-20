@@ -62,7 +62,9 @@ export const useDuplicateSuggestions = (status: SuggestionStatus = 'PENDING', li
     queryKey: QUERY_KEYS.suggestions(status),
     queryFn: async () => {
       const response = await getSuggestions({ status, limit });
-      return (response || []).map((item) => ({
+      // API returns wrapped response { data: [...] }
+      const items = (response as unknown as { data?: unknown[] })?.data ?? response ?? [];
+      return (items as typeof response).map((item) => ({
         id: item.id ?? '',
         similarityScore: item.similarityScore ?? 0,
         status: (item.status ?? 'PENDING') as SuggestionStatus,
@@ -89,6 +91,8 @@ export const useDuplicateSuggestions = (status: SuggestionStatus = 'PENDING', li
       })) as DuplicateSuggestion[];
     },
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
   });
 };
 
@@ -100,6 +104,8 @@ export const usePendingCount = () => {
       return response?.count ?? 0;
     },
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
   });
 };
 
