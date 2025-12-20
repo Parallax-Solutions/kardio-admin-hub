@@ -88,19 +88,38 @@ export function TestParserDialog({ open, onOpenChange, config, bankName }: TestP
       };
 
       const response = await testParser.mutateAsync(payload);
-      const result = response?.data ?? response;
+      const result = response as {
+        data?: {
+          success?: boolean;
+          extractedData?: Record<string, unknown>;
+          extractedFields?: string[];
+          missingFields?: string[];
+          errors?: string[];
+          warnings?: string[];
+          patternMatches?: { senderMatched: boolean; subjectMatched: boolean };
+        };
+        success?: boolean;
+        extractedData?: Record<string, unknown>;
+        extractedFields?: string[];
+        missingFields?: string[];
+        errors?: string[];
+        warnings?: string[];
+        patternMatches?: { senderMatched: boolean; subjectMatched: boolean };
+      };
+      
+      const data = result?.data ?? result;
 
       setTestResult({
-        success: result?.success ?? false,
-        extractedData: result?.extractedData ?? result?.data ?? null,
-        extractedFields: result?.extractedFields ?? [],
-        missingFields: result?.missingFields ?? [],
-        errors: result?.errors ?? [],
-        warnings: result?.warnings ?? [],
-        patternMatches: result?.patternMatches ?? { senderMatched: false, subjectMatched: false },
+        success: data?.success ?? false,
+        extractedData: data?.extractedData ?? null,
+        extractedFields: data?.extractedFields ?? [],
+        missingFields: data?.missingFields ?? [],
+        errors: data?.errors ?? [],
+        warnings: data?.warnings ?? [],
+        patternMatches: data?.patternMatches ?? { senderMatched: false, subjectMatched: false },
       });
 
-      if (result?.success) {
+      if (data?.success) {
         toast.success('Parser test completed successfully!');
       }
     } catch (error) {

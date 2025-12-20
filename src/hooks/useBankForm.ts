@@ -6,6 +6,7 @@ export interface BankFormData {
   name: string;
   slug: string;
   country: string;
+  countryCode: string;
   isActive: boolean;
 }
 
@@ -13,6 +14,7 @@ const initialFormData: BankFormData = {
   name: '',
   slug: '',
   country: '',
+  countryCode: '',
   isActive: true,
 };
 
@@ -36,6 +38,7 @@ export function useBankForm() {
       name: bank.name,
       slug: bank.slug,
       country: bank.country,
+      countryCode: bank.country,
       isActive: bank.isActive,
     });
     setIsDialogOpen(true);
