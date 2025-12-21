@@ -13,6 +13,7 @@ import {
   Coins,
   Loader2,
   GitMerge,
+  FileWarning,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ const navItems = [
   { path: '/admin/parser-configs', label: 'Parser Configs', icon: FileCode2 },
   { path: '/admin/currencies', label: 'Currencies', icon: Coins },
   { path: '/admin/merchant-duplicates', label: 'Merchant Duplicates', icon: GitMerge },
+  { path: '/admin/category-reports', label: 'Category Reports', icon: FileWarning },
   { path: '/admin/users', label: 'Users', icon: Users },
 ];
 
