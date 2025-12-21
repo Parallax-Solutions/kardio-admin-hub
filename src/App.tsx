@@ -20,6 +20,7 @@ const AdminParserConfigEditor = lazy(() => import("./pages/admin/ParserConfigEdi
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminCurrencies = lazy(() => import("./pages/admin/Currencies"));
 const AdminMerchantDuplicates = lazy(() => import("./pages/admin/MerchantDuplicates"));
+const AdminCategoryUserReports = lazy(() => import("./pages/admin/CategoryUserReports"));
 
 // Loading fallback component for public pages (full screen)
 function FullPageLoader() {
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="parser-configs/:id/edit" element={<AdminParserConfigEditor />} />
                 <Route path="currencies" element={<AdminCurrencies />} />
                 <Route path="merchant-duplicates" element={<AdminMerchantDuplicates />} />
+                <Route path="category-reports" element={<AdminCategoryUserReports />} />
                 <Route path="users" element={<AdminUsers />} />
               </Route>
               
