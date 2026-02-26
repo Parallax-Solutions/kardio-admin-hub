@@ -10,7 +10,6 @@ import { AdminLayout } from "@/layouts/AdminLayout";
 import { Loader2 } from "lucide-react";
 
 // Lazy load pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -43,7 +42,7 @@ const App = () => (
           <Suspense fallback={<FullPageLoader />}>
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               
               {/* Protected Admin Routes */}
